@@ -1,0 +1,1352 @@
+[
+    {
+        "id": "228",
+        "question": "A data engineer has created a 'transactions' Delta table on Databricks that should be used by the analytics team. The analytics team wants to use the table with another tool which requires Apache Iceberg format. What should the data engineer do?",
+        "options": [
+            "A. Require the analytics team to use a tool which supports Delta table.",
+            "B. Create an Iceberg copy of the 'transactions' Delta table which can be used by the analytics team.",
+            "C. Convert the 'transactions' Delta to Iceberg and enable uniform so that the table can be read as a Delta table.",
+            "D. Enable uniform on the transactions table to 'iceberg' so that the table can be read as an Iceberg table."
+        ],
+        "answer": "D",
+        "explanation": "L'abilitazione di UniForm (Universal Format) su una tabella Delta permette ai client Iceberg di leggere la tabella come se fosse in formato nativo, senza duplicare i dati fisici."
+    },
+    {
+        "id": "229",
+        "question": "A junior data engineer is working to implement logic for a Lakehouse table named silver_device_recordings. The source data contains 100 unique fields in a highly nested JSON structure. The silver_device_recordings table will be used downstream for highly selective joins on a number of fields, and will also be leveraged by the machine learning team to filter on a handful of relevant fields. In total, 15 fields have been identified that will often be used for filter and join logic. The data engineer is trying to determine the best approach for dealing with these nested fields before declaring the table schema. Which of the following accurately presents information about Delta Lake and Databricks that may impact their decision-making process?",
+        "options": [
+            "A. Because Delta Lake uses Parquet for data storage, Dremel encoding information for nesting can be directly referenced by the Delta transaction log.",
+            "B. Schema inference and evolution on Databricks ensure that inferred types will always accurately match the data types used by downstream systems.",
+            "C. The Tungsten encoding used by Databricks is optimized for storing string data; newly-added native support for querying JSON strings means that string types are always most efficient.",
+            "D. By default, Delta Lake collects statistics on the first 32 columns in a table; these statistics are leveraged for data skipping when executing selective queries."
+        ],
+        "answer": "D",
+        "explanation": "Per default, Delta Lake raccoglie statistiche (min/max/null count) solo sulle prime 32 colonne. Se le 15 colonne usate per join e filtri sono oltre questa soglia, il data skipping non funzionerà a meno di non cambiare la configurazione."
+    },
+    {
+        "id": "230",
+        "question": "A platform engineer is creating catalogs and schemas for the development team to use. The engineer has created an initial catalog, Catalog_A, and initial schema, Schema_A. The engineer has also granted USE CATALOG, USE SCHEMA, and CREATE TABLE to the development team so that the engineer can begin populating the schema with new tables. Despite being owner of the catalog and schema, the engineer noticed that they do not have access to the underlying tables in Schema_A. What explains the engineer's lack of access to the underlying tables?",
+        "options": [
+            "A. The owner of the schema does not automatically have permission to tables within the schema, but can grant them to themselves at any point.",
+            "B. Users granted with USE CATALOG can modify the owner's permissions to downstream tables.",
+            "C. Permissions explicitly given by the table creator are the only way the Platform Engineer could access the underlying tables in their schema.",
+            "D. The platform engineer needs to execute a REFRESH statement as the table permissions did not automatically update for owners."
+        ],
+        "answer": "A",
+        "explanation": "In Unity Catalog, la proprietà di un oggetto padre (catalogo/schema) non garantisce l'accesso automatico ai dati degli oggetti figli creati da altri utenti, ma l'owner ha il potere di concedersi tali permessi (GRANT)."
+    },
+    {
+        "id": "231",
+        "question": "A data engineer has created a new cluster using shared access mode with default configurations. The data engineer needs to allow the development team access to view the driver logs if needed. What are the minimal cluster permissions that allow the development team to accomplish this?",
+        "options": [
+            "A. CAN VIEW",
+            "B. CAN RESTART",
+            "C. CAN ATTACH TO",
+            "D. CAN MANAGE"
+        ],
+        "answer": "C",
+        "explanation": "Il privilegio 'CAN ATTACH TO' permette agli utenti di collegare i propri notebook al cluster e di visualizzare i log del driver Spark."
+    },
+    {
+        "id": "232",
+        "question": "A data engineer wants to create a cluster using the Databricks CLI for a big ETL pipeline. The cluster should have five workers and one driver of type i3.xlarge and should use the '14.3.x-scala2.12' runtime. Which command should the data engineer use?",
+        "options": [
+            "A. databricks compute add 14.3.x-scala2.12 --num-workers 5 --node-type-id i3.xlarge --cluster-name Data_Engineer_cluster",
+            "B. databricks clusters create --spark-version 14.3.x-scala2.12 --num-workers 5 --node-type-id i3.xlarge --cluster-name Data_Engineer_cluster",
+            "C. databricks compute create 14.3.x-scala2.12 --num-workers 5 --node-type-id i3.xlarge --cluster-name Data_Engineer_cluster",
+            "D. databricks clusters add 14.3.x-scala2.12 --num-workers 5 --node-type-id i3.xlarge --cluster-name Data_Engineer_cluster"
+        ],
+        "answer": "B",
+        "explanation": "Nella Databricks CLI, il comando corretto per gestire i cluster è 'clusters' e l'azione è 'create'. (Nota: ho corretto '13.xlarge' in 'i3.xlarge' per coerenza tecnica)."
+    },
+    {
+        "id": "233",
+        "question": "A 'transactions' table has been liquid clustered on the columns 'product_id', 'user_id' and 'event_date'. Which operation lacks support for cluster on write?",
+        "options": [
+            "A. CTAS and RTAS statements",
+            "B. spark.writeStream.format('delta').mode('append')",
+            "C. spark.write.format('delta').mode('append')",
+            "D. INSERT INTO operations"
+        ],
+        "answer": "B",
+        "explanation": "Lo Structured Streaming (writeStream) non supporta il 'cluster on write'. Per le tabelle in streaming, il clustering avviene solo eseguendo il comando OPTIMIZE."
+    },
+    {
+        "id": "234",
+        "question": "The data governance team has instituted a requirement that the 'user' table containing Personal Identifiable Information (PII) must have the appropriate masking on the SSN column. This means that anyone outside of the HRAdminGroup should see masked social security numbers as ***-**-****. The team created a masking function: CREATE FUNCTION ssn_mask (ssn STRING) RETURN CASE WHEN is_member('HRAdminGroup') THEN ssn ELSE '***-**-****' END; What does the data governance team need to do next to achieve this goal?",
+        "options": [
+            "A. CREATE TABLE users (name STRING); ALTER TABLE users CREATE COLUMN ssn CREATE MASK ssn_mask;",
+            "B. CREATE TABLE users (name STRING, int STRING); ALTER TABLE users ALTER COLUMN ssn CREATE MASK if is_member('HRAdminGroup');",
+            "C. CREATE TABLE users (name STRING, ssn INT MASKED ssn_mask);",
+            "D. CREATE TABLE users (name STRING, ssn STRING); ALTER TABLE users ALTER COLUMN ssn SET MASK ssn_mask;"
+        ],
+        "answer": "D",
+        "explanation": "In Unity Catalog, per applicare una funzione di mascheramento già esistente a una colonna esistente, si utilizza il comando ALTER TABLE ... ALTER COLUMN ... SET MASK."
+    },
+    {
+        "id": "235",
+        "question": "A data engineer needs to create an application that will collect information about the latest job run including the repair history. How should the data engineer format the request?",
+        "options": [
+            "A. Call/api/2.1/jobs/runs/list with the run_id and include_history parameters",
+            "B. Call/api/2.1/jobs/runs/get with the run_id and include_history parameters",
+            "C. Call/api/2.1/jobs/runs/get with the job_id and include_history parameters",
+            "D. Call/api/2.1/jobs/runs/list with the job_id and include_history parameters"
+        ],
+        "answer": "B",
+        "explanation": "L'endpoint /get è quello corretto per recuperare i dettagli di una singola esecuzione specifica identificata dal run_id. Il parametro include_history permette di visualizzare i dettagli dei tentativi di riparazione (repair history)."
+    },
+    {
+        "id": "236",
+        "question": "A data engineer is working in an interactive notebook with many transformations before outputting the result from display (df.collect()). The notebook includes wide transformations and a cross join. The data engineer is getting the following error: \"The spark driver has stopped unexpectedly and is restarting. Your notebook will be automatically reattached.\" Which action should the data engineer take?",
+        "options": [
+            "A. Run the notebook on a single node cluster to keep the driver from falling.",
+            "B. Rewrite their code to avoid putting memory pressure on the driver node.",
+            "C. Check into the Spark UI to see how many jobs are assigned to each stage as they are employing fewer executors.",
+            "D. Look at the compute metrics UI to see if the executors have higher than 90% memory utilization."
+        ],
+        "answer": "B",
+        "explanation": "L'errore indica un crash del driver (OOM - Out of Memory). L'uso di collect() dopo un cross join tenta di caricare l'intero dataset risultante nella memoria del driver; è necessario riscrivere il codice per processare i dati in modo distribuito o campionarli."
+    },
+    {
+        "id": "237",
+        "question": "An analytics team wants run an experiment in the short term on the customer transaction Delta table (with 20 billions records) created by the data engineering team in Databricks SQL. Which strategy should the data engineering team use to ensure minimal downtime and no impact on the ongoing ETL processes?",
+        "options": [
+            "A. Deep clone the table for the analytics team.",
+            "B. Create a new table for the analytics team using a CTAS statement.",
+            "C. Shallow clone the table for the analytics team.",
+            "D. Give access to the table for the analytics team."
+        ],
+        "answer": "C",
+        "explanation": "Lo Shallow Clone copia solo i metadati della tabella senza duplicare i 20 miliardi di record. È un'operazione quasi istantanea e permette al team di analisi di fare esperimenti senza occupare storage aggiuntivo o impattare la produzione."
+    },
+    {
+        "id": "238",
+        "question": "A data team is working to optimize an existing large, fast-growing table 'orders' with high cardinality columns, which experiences significant data skew and requires frequent concurrent writes. The team noticed that the columns 'user_id', 'event_timestamp' and 'product_id' are heavily used in analytical queries and filters, although those keys may be subject to change in the future due to different business requirements. Which partitioning strategy should the team choose to optimize the table for immediate data skipping, incremental management over time, and flexibility?",
+        "options": [
+            "A. Partition the table with: ALTER TABLE orders PARTITION BY user_id, product_id, event_timestamp",
+            "B. Use z-order after partitioning the table: OPTIMIZE orders ZORDER BY (user_id, product_id) WHERE event_timestamp = current date ()",
+            "C. Cluster the table with: ALTER TABLE orders CLUSTER BY user_id, product_id, event_timestamp",
+            "D. Z-order the table with OPTIMIZE orders ZORDER BY (user_id, product_id, event_timestamp)"
+        ],
+        "answer": "C",
+        "explanation": "Il Liquid Clustering (CLUSTER BY) è la soluzione ideale per colonne ad alta cardinalità e per tabelle soggette a cambiamenti nelle chiavi di clustering, poiché non richiede la riscrittura fisica dei dati basata su cartelle rigide (come il partizionamento)."
+    },
+    {
+        "id": "239",
+        "question": "A faulty loT sensor in a factory reports a temperature of -500, causing the LDP pipeline to fail the expectation, which only allows values between -100 and 200 degrees Celsius. The data engineer would like to further analyze the faulty data to better understand the reason behind this. How should the data engineer resolve the faulty data while ensuring data quality standards are maintained?",
+        "options": [
+            "A. Remove all expectations form the pipeline to prevent any future failures, regardless of data quality.",
+            "B. Ignore the error and simply re-run the pipeline, as Databricks will automatically skip the problematic record on the next run.",
+            "C. Fix the pipeline code and implement a quarantine logic to isolate the faulty data before re-running the pipeline.",
+            "D. Change the expectation action from fail to warn so that invalid records are included in the output and the pipeline does not fail."
+        ],
+        "answer": "C",
+        "explanation": "La logica di quarantena consiste nel deviare i record che non rispettano i requisiti di qualità in una tabella separata. Questo permette di mantenere pulita la tabella target senza bloccare la pipeline e consente l'analisi successiva dei dati scartati."
+    },
+    {
+        "id": "240",
+        "question": "A data engineer is optimizing a managed table that suffers from data skew and frequently changing query filter columns. The engineer needs to avoid costly data rewrites when query patterns evolve. The table size is under 1TB. How should data engineer meet this requirement?",
+        "options": [
+            "A. Use Hive-style partitioning, as it provides efficient data skipping and is easy to change partition columns at any time.",
+            "B. Combine partitioning and Z-ordering to maximize flexibility and minimize maintenance as query patterns change.",
+            "C. Enable liquid clustering, as it efficiently handles data skew, allows clustering keys to be changed without rewriting existing data, and adapts to evolving query patterns.",
+            "D. Apply Z-ordering, since it allows flexible reorganization of data layout without rewriting existing and adapts easily to new filter columns."
+        ],
+        "answer": "C",
+        "explanation": "Il Liquid Clustering permette di modificare le chiavi di clustering tramite ALTER TABLE senza dover riscrivere i dati esistenti, adattandosi perfettamente a pattern di query che evolvono nel tempo."
+    },
+    {
+        "id": "241",
+        "question": "A security team wants to enforce data protection for a customer table containing customer PII data. To comply with local policies, sales team members should only see customers from their region, while non-admin users should have email addresses masked. Which implementation approach should be used when using Unity Catalog row filters and column masks?",
+        "options": [
+            "A. Create SQL UDFs for row filtering based on user region and column masking based on group membership, then apply them using ALTER TABLE SET ROW FILTER and ALTER COLUMN SET MASK commands.",
+            "B. Use table ACLs to restrict access using tags with GRANT SELECT ON table_name WITH TAG command, and rely on application-level filtering for sensitive data based on user region.",
+            "C. Create a view with dynamic WHERE clauses for region filtering and use string replacement functions for email masking using ALTER COLUMN SET MASK command.",
+            "D. Implement row filters with SQL UDFs based on user region only since column masks cannot be combined with row filters on the same table, then apply them be recreating the table with DROP TABLE and CREATE TABLE SET ROW FILTER commands."
+        ],
+        "answer": "A",
+        "explanation": "L'approccio nativo di Unity Catalog per la sicurezza granulare consiste nel definire funzioni SQL (UDF) che controllano l'appartenenza a gruppi o attributi e associarle alla tabella come Row Filters o Column Masks."
+    },
+    {
+        "id": "242",
+        "question": "A data engineer is evaluating tools to build a production-grade data pipeline. The team must process change data from cloud object storage, filter out or isolate invalid records, and ensure the timely delivery of clean data to downstream consumers. The team is small, under tight deadlines, and wants to minimize operational overhead while keeping pipelines auditable and maintainable. Which approach should the data engineer implement?",
+        "options": [
+            "A. Ingest data directly into Delta tables via Spark jobs, apply data quality filters using UDFs, and use LDP for creating Materialized Views.",
+            "B. Use a hybrid approach: Ingest with Auto Loader into Bronze tables, then process using SQL queries in Databricks Workflows to generate cleaned Silver and Gold tables on a schedule.",
+            "C. Implement ingestion using Auto Loader with Structured Streaming, and manage invalid data handling and table updates using checkpointing and merge logic.",
+            "D. Use LDP to build declarative pipelines with Streaming Tables and Materialized Views, leveraging built-in support for data expectations and incremental processing."
+        ],
+        "answer": "D",
+        "explanation": "LDP (Lakeflow Declarative Pipelines) automatizza la gestione della qualità dei dati e l'aggiornamento incrementale delle tabelle, riducendo drasticamente il lavoro manuale di manutenzione e auditing."
+    },
+    {
+        "id": "243",
+        "question": "A data engineer is using Structured Streaming to read in transaction data from a bronze Delta table. It was discovered that the data has quality issues where talvolta il valore della transazione è negativo, e in tal caso le righe devono essere indirizzate a una tabella di quarantena separata. Hanno requisiti di bassa latenza per i dati buoni, ma i dati cattivi verranno analizzati solo periodicamente. Come dovrebbe essere implementato il processo di quarantena?",
+        "options": [
+            "A. Modificare il job di streaming per i dati buoni filtrando i record negativi. Entrambi dovrebbero girare come stream separati sullo stesso cluster per minimizzare i costi.",
+            "B. Aggiornare il job esistente aggiungendo una colonna booleana 'quarantine' per distinguere i dati. Elaborare tutto insieme risparmia sui costi.",
+            "C. Aggiornare il job esistente usando una funzione foreachBatch per filtrare e scrivere i dati buoni e cattivi in tabelle diverse nello stesso micro-batch.",
+            "D. Il job per i dati buoni filtra i negativi e non condivide il calcolo con altri processi. Il job per la quarantena filtra i positivi, gira su un cluster piccolo separato e viene eseguito una volta al giorno per minimizzare i costi."
+        ],
+        "answer": "D",
+        "explanation": "Questa strategia separa le responsabilità: il job di produzione rimane veloce e isolato (bassa latenza), mentre quello di quarantena (che non è critico) gira con meno risorse e frequenza ridotta per risparmiare costi."
+    },
+    {
+        "id": "244",
+        "question": "When monitoring a complex workload, being able to see the query plan is critical to understanding what the workload is doing. Where can the visualization of the query plan be found?",
+        "options": [
+            "A. In the Spart UI, under the Jobs tab",
+            "B. In the Query Profiler, under Query Source",
+            "C. In the Spark UI, under the SQL/DataFrame tab",
+            "D. In the Query Profiler, under the Stages tab"
+        ],
+        "answer": "C",
+        "explanation": "La Spark UI, nel tab SQL/DataFrame, fornisce una visualizzazione grafica (DAG) del piano di esecuzione, mostrando come Spark ha distribuito ed eseguito le operazioni della query."
+    },
+    {
+        "id": "245",
+        "question": "A data engineer is troubleshooting a slow-running Delta Lake query on Databricks SQL involving complex joins and large datasets. They need to identify whether the root cause is related to poor data skipping, inefficient join strategies, or excessive data shuffling. Which approach should identify the specific bottlenecks using native Databricks tools?",
+        "options": [
+            "A. Analyze the Top Operators panel in the Query Profile to identify high-cost operations like BroadcastNestedLoopJoin",
+            "B. Check the query's execution time in the Jobs UI and correlate it with cluster resource utilization metrics.",
+            "C. Enable the EXPLAIN command to review the parsed logical plan and manually estimate shuffle sizes.",
+            "D. Use the LIMIT clause to run a subset of the query and compare execution times with the full dataset."
+        ],
+        "answer": "A",
+        "explanation": "Il Query Profile di Databricks SQL è lo strumento specifico per il tuning. Il pannello 'Top Operators' elenca le operazioni che hanno consumato più tempo o risorse, permettendo di individuare immediatamente join inefficienti (come i Nested Loop) o problemi di shuffle."
+    },
+    {
+        "id": "246",
+        "question": "A data engineer is designing a secure data sharing strategy for their organization. The company needs to share sensitive customer analytics data with two different partners. Partner A uses Databricks with Unity Catalog enabled, while Partner B uses Apache Spark on AWS without Databricks. How should the company implement secure data sharing for these scenarios?",
+        "options": [
+            "A. For Partner A, implement Databricks-to-Databricks sharing (D2D) with Unity Catalog integration and no-token exchange system. For Partner B, use open sharing protocol (D2O) with either bearer tokens or OIDC federation for authentication, ensuring both approaches maintain robust security and governance.",
+            "B. Both partners should use the same Delta Sharing approach since security requirements are identical. You should create bearer tokens for both partners and use the open sharing protocol (D2O) for maximum compatibility.",
+            "C. Open sharing protocol (D2O) should be used for both partners because it provides better security than D2D sharing. The bearer token approach is always more secure than Unity Catalog's native authentication.",
+            "D. Databricks-to-Databricks sharing (D2D) can only be used within the same cloud provider, so you must use open sharing (D2O) for any cross-cloud scenarios. Unit Catalog governance is not available when sharing with external platforms."
+        ],
+        "answer": "A",
+        "explanation": "Delta Sharing offre due modalità: Databricks-to-Databricks (D2D), che è più semplice e sicura perché non richiede la gestione di token, e l'Open Sharing, che permette di condividere dati con chiunque non usi Databricks tramite l'invio di un file di credenziali (token)."
+    },
+    {
+        "id": "247",
+        "question": "Which approach demonstrates a modular and testable way to use DataFrame transform for ETL code in PySpark?",
+        "options": [
+            "A. class Pipeline: def transform(self, df): return df.withColumn('value_upper', upper(col('value'))); pipeline = Pipeline(); assertDataFrameEqual (pipeline.transform(test_input), expected)",
+            "B. def transform_data(input_df): return output_df; test_input = spark.createDataFrame ([(1, 'a')], ['id', 'value']); assertDataFrameEqual (transform_data (test_input), expected)",
+            "C. def upper_transform(df): return df.withColumn('value_upper', upper(col('value'))); actual = test_input.transform(upper_transform); assertDataFrameEqual (actual, expected)",
+            "D. def upper_value (df): return df.withColumn('value_upper', upper(col('value'))); def filter_positive(df): return df.filter (df['id'] > 0); pipeline_df = df.transform(upper_value).transform(filter_positive)"
+        ],
+        "answer": "C",
+        "explanation": "Il metodo `.transform()` di PySpark è progettato per il chaining di funzioni. Permette di scrivere trasformazioni modulari che accettano un DataFrame e restituiscono un DataFrame, facilitando enormemente i test unitari e la leggibilità del codice."
+    },
+    {
+        "id": "248",
+        "question": "A company stores account transactions in a Delta Lake table. The company needs to apply frequent account-level correlations (e.g., UPDATE statements) but wants to avoid rewriting entire Parquet files for each change to reduce file churn and improve write performance. Which Delta Lake feature should they enable?",
+        "options": [
+            "A. Enable automatic file compaction on writes",
+            "B. Enable change data feed on the Delta table",
+            "C. Partition the Delta table by account_id",
+            "D. Enable deletion vectors on the Delta table"
+        ],
+        "answer": "D",
+        "explanation": "I 'Deletion Vectors' sono una funzionalità cruciale di Delta Lake per ottimizzare le operazioni di UPDATE e DELETE. Invece di riscrivere l'intero file Parquet quando una riga cambia, Delta crea un piccolo file (vettore) che indica quali righe sono state eliminate/cambiate, riducendo drasticamente l'I/O di scrittura."
+    },
+    {
+        "id": "249",
+        "question": "In a Databricks Asset Bundle (DAB) project, in the file resources/app.yml, the data engineer would like to deploy a Databricks Apps 'databricks_app_deployed' and Volume 'volume_deployed' and grant the Service Principal behind Databricks Apps permissions to READ and WRITE to the Volume. How should the data engineer achieve the deployment?",
+        "options": [
+            "A. (YAML con resources.apps e volumes con grants che usano ${resources.app.databricks_app_deployed.id} e privilegi READ_VOLUME / WRITE_VOLUME)",
+            "B. (YAML con grants riferiti al nome dell'app invece dell'ID)",
+            "C. (YAML con privilegi READ e WRITE generici invece di specifici per volumi)",
+            "D. (YAML con nomi catalog/schema e privilegi separati)"
+        ],
+        "answer": "A",
+        "explanation": "La configurazione corretta nei Bundle richiede di referenziare dinamicamente l'ID dell'app creata e assegnare i privilegi specifici per i volumi (READ_VOLUME, WRITE_VOLUME) nella sezione 'grants' della risorsa Volume."
+    },
+    {
+        "id": "250",
+        "question": "A data engineering team needs to implement a tagging system for their tables as part of an automated ETL process, and needs to apply tags programmatically to tables in Unity Catalog. Which SQL command adds tags to a table programmatically?",
+        "options": [
+            "A. ALTER TABLE table_name SET TAGS ('key1' = 'value1', 'key2' = 'value2');",
+            "B. APPLY TAGS ON table_name VALUES ('key1' = 'value1', 'key2' = 'value2')",
+            "C. COMMENT ON TABLE table_name TAGS ('key1' = 'value1', 'key2' = 'value2')",
+            "D. SET TAGS FOR table_name AS ('key1' = 'value1', 'key2' = 'value2')"
+        ],
+        "answer": "A",
+        "explanation": "In Unity Catalog, la gestione dei tag avviene tramite il comando standard ALTER TABLE seguito dalla clausola SET TAGS. Questo permette di aggiungere metadati strutturati (coppie chiave-valore) agli oggetti del catalogo."
+    },
+    {
+        "id": "251",
+        "question": "A platform engineer needs to report the resource consumption, categorized by SKU tier, across all workspaces. The engineer decides to use the system.billing.usage system table to create a query. Which SQL query will accurately return the daily usage by product?",
+        "options": [
+            "A. SELECT DATE_TRUNC('day', usage_start_time) AS day, sku_name, SUM(dbus) AS daily_dbus FROM system.billing.usage WHERE sku_name IS NOT NULL GROUP BY day, sku_name;",
+            "B. SELECT CAST(usage_start_time AS DATE) AS usage_day, sku_name, COUNT (usage_quantity) AS dbu_count FROM system.billing.usage GROUP BY usage_day, sku_name ORDER BY usage_day;",
+            "C. SELECT date_trunc('day', usage_start_time) AS usage_day, sku_name, SUM(usage_quantity) AS total_daily_dbus FROM system.billing.usage WHERE usage_quantity IS NOT NULL GROUP BY usage_day, sku_name ORDER BY usage_day;",
+            "D. SELECT TO_DATE(usage_start_time) AS usage_day, sku_name, SUM(usage_quantity) AS total_dbus FROM system.billing.usage GROUP BY usage_day, sku_name ORDER BY usage_day"
+        ],
+        "answer": "C",
+        "explanation": "La query corretta utilizza la colonna 'usage_quantity' (che rappresenta i DBU consumati) e la funzione date_trunc per raggruppare l'utilizzo su base giornaliera partendo dalla colonna 'usage_start_time'."
+    },
+    {
+        "id": "252",
+        "question": "A data engineer is running a groupBy aggregation on a massive user activity log grouped by user_id. A few users have millions of records, causing task skew and long runtimes. Which technique will fix the skew in this aggregation?",
+        "options": [
+            "A. Increase the Spark driver memory and retry.",
+            "B. Filter out the skewed users before the aggregation",
+            "C. Use salting by adding a random prefix to skewed keys before aggregation, then aggregate again after removing the prefix.",
+            "D. Use reduceByKey instead of groupBy to avoid shuffles."
+        ],
+        "answer": "C",
+        "explanation": "Il 'Salting' è la tecnica standard per risolvere il task skew. Aggiungendo un prefisso casuale alle chiavi sbilanciate, i dati di un singolo utente vengono distribuiti su più task, bilanciando il carico di lavoro tra i worker."
+    },
+    {
+        "id": "253",
+        "question": "A job runs four independent tasks (X, Y, Z, W) in parallel to process regional sales data. The Data Engineering team recently updated its cluster policy to ban cost-prohibitive instance types. Task Y now fails due to the newly enforced cluster policy restricting the use of a specific instance type. A data engineer needs to resolve the failure quickly without disrupting the other tasks. How should the data engineer resolve the failure of tasks?",
+        "options": [
+            "A. Delete the failed run, disable the cluster policy, and re-execute all tasks.",
+            "B. Manually create a new cluster for Task Y, update the job configuration, and trigger a full re-run.",
+            "C. Use 'Repair run', override the cluster configuration for Task Y to use a permitted instance type, and let Databricks re-run only Task Y.",
+            "D. Edit the global cluster policy to allow the restricted instance type, then re-run the entire job."
+        ],
+        "answer": "C",
+        "explanation": "La funzione 'Repair run' permette di rieseguire selettivamente solo i task falliti. In questo modo è possibile correggere la configurazione del singolo task (Y) e ripartire senza sprecare tempo e risorse per i task già completati (X, Z, W)."
+    },
+    {
+        "id": "254",
+        "question": "The data engineer needs to generate a DataFrame that ranks salespeople within each region based on their total cumulative sales, with the highest seller ranked as 1. If multiple salespeople have the same total sales, they should share the same rank. Which code snippet will perform this ranking?",
+        "options": [
+            "A. window_spec = Window.partitionBy('region').orderBy(F.desc('sale_amount')); ranked_df = sales_df.withColumn('rank', F.dense_rank().over(window_spec))",
+            "B. agg_df = sales_df.groupBy('salesperson_id', 'region').agg(F.sum('sale_amount').alias('total_sales')); window_spec = Window.partitionBy('region').orderBy(F.desc('total_sales')); ranked_df = agg_df.withColumn('rank', F.rank().over(window_spec))",
+            "C. agg_df = sales_df.groupBy('salesperson_id', 'region').agg(F.sum('sale_amount').alias('total_sales')); window_spec = Window.orderBy(F.desc('total_sales')); ranked_df = agg_df.withColumn('rank', F.dense_rank().over(window_spec))",
+            "D. agg_df = sales_df.groupBy('salesperson_id', 'region').agg(F.sum('sale_amount').alias('total_sales')); window_spec = Window.partitionBy('region').orderBy(F.desc('total_sales')); ranked_df = agg_df.withColumn('rank', F.dense_rank().over(window_spec))"
+        ],
+        "answer": "D",
+        "explanation": "Per classificare all'interno di una regione, è necessario usare partitionBy('region'). Per garantire che i pareggi condividano lo stesso rango senza saltare numeri nella sequenza, si deve utilizzare la funzione dense_rank()."
+    },
+    {
+        "id": "255",
+        "question": "What describes a primary technical challenge in ensuring consistent PII masking across all nodes in large-scale, distributed Databricks batch and streaming pipelines?",
+        "options": [
+            "A. PII masking is only required for direct identifiers.",
+            "B. Dynamic data masking is applied only at rest, so it does not affect query performance.",
+            "C. Masking functions must be standardized and managed through Unity Catalog, with enforcement applied across all relevant datasets to avoid any data inconsistency.",
+            "D. Native masking in Databricks automatically synchronizes with all downstream external Databricks systems."
+        ],
+        "answer": "C",
+        "explanation": "La gestione centralizzata tramite Unity Catalog è essenziale per garantire che le regole di mascheramento siano applicate in modo identico e coerente in tutto l'ambiente distribuito, sia per i carichi batch che per quelli streaming."
+    },
+    {
+        "id": "256",
+        "question": "A data engineer needs to install custom Python libraries (.whl and .tar.gz) from an S3 bucket in a Unity Catalog-enabled workspace with no internet access. Which approach should the engineer use to install these dependencies while ensuring reproducibility and compliance?",
+        "options": [
+            "A. Use an init script on the cluster to install all dependencies using pip, referencing the local file system.",
+            "B. Install all dependencies manually in the driver node, then export the environment and reimport on job clusters using %conda.",
+            "C. Create a Python wheel file for the entire project, upload it to the Databricks Workspace Files or Volumes, and install it using a Cluster Library or pip install in a requirements.txt declared within a Databricks Asset Bundle.",
+            "D. Use %pip install in every notebook and job to install packages directly from PyPI and custom S3 paths."
+        ],
+        "answer": "C",
+        "explanation": "L'uso di Databricks Volumes combinato con i Databricks Asset Bundles (DABs) è la metodologia raccomandata per gestire pacchetti custom in ambienti sicuri, garantendo che le versioni delle librerie siano tracciate e riproducibili."
+    },
+    {
+        "id": "257",
+        "question": "A data engineer is using Auto Loader to read in JSON data. They have configured Auto Loader to quarantine invalid JSON records. They are noticing that some records are being quarantined even though they are well-formed JSON. Snippet: .schema('a int, b int'). What is the cause of the missing data?",
+        "options": [
+            "A. The source data is valid JSON, but doesn't conform to their defined schema in some way",
+            "B. The badRecordsPath location is accumulating many small files",
+            "C. The engineer forgot to set the option 'cloudFiles.quarantineMode' 'rescue'.",
+            "D. At some point, the upstream data provider switched everything to multi-line JSON."
+        ],
+        "answer": "A",
+        "explanation": "Se viene definito uno schema esplicito (a int, b int), Auto Loader scarterà o metterà in quarantena anche JSON validi se i tipi di dato non corrispondono (es. una stringa al posto di un intero) o se mancano campi obbligatori."
+    },
+    {
+        "id": "258",
+        "question": "A data engineer wants to enforce the principle of least privilege when configuring ACLs for Databricks jobs in a collaborative workspace. Which approach should the data engineer use?",
+        "options": [
+            "A. Assign users only the minimum permission level (e.g., CAN RUN or CAN VIEW) required for their role on each job.",
+            "B. Use only folder-level permissions and avoid setting permissions on individual jobs.",
+            "C. Grant CAN RUN permission to everyone and CAN MANAGE to a single admin group.",
+            "D. Grant all users CAN MANAGE permission on all jobs to avoid access issues."
+        ],
+        "answer": "A",
+        "explanation": "Il principio del minimo privilegio stabilisce che agli utenti debba essere concesso solo l'accesso strettamente necessario per le loro mansioni, limitando i rischi di modifiche non autorizzate."
+    },
+    {
+        "id": "259",
+        "question": "New team members report they can create tables in the default schema but cannot access tables in other schemas within the same workspace catalog. Why are the new team members unable to access tables in other schemas?",
+        "options": [
+            "A. Workspace catalog permissions are not subject to inheritance rules.",
+            "B. Workspace users receive USE CATALOG and specific privileges on default schema only.",
+            "C. Tables in other schemas require additional BROWSE privileges that new users don't receive automatically",
+            "D. New users only receive CREATE TABLE privileges on the default schema."
+        ],
+        "answer": "B",
+        "explanation": "In Unity Catalog, i permessi sono granulari. Gli utenti del workspace hanno spesso permessi predefiniti solo sullo schema 'default'. Per altri schemi, i privilegi devono essere concessi esplicitamente."
+    },
+    {
+        "id": "260",
+        "question": "A data engineer needs to download multiple PDF files from a third-party REST API. The API is time-consuming and encounters intermittent errors. The engineer needs to download ten report types, and the list can be changed over time. How should the data engineer achieve this?",
+        "options": [
+            "A. Use a foreach task with a list of report types as its inputs.",
+            "B. Define ten Notebook tasks to clearly track which report download failed.",
+            "C. Use a Delta Lake table to track each report download status as 10 rows, and use it as a source table to execute the download function as a Pandas UDF.",
+            "D. Define a list variable within a Notebook to loop through the report types to download them, and print the download results. Execute it as a Notebook tasks."
+        ],
+        "answer": "A",
+        "explanation": "Il task 'For Each' nei Databricks Workflows permette di iterare su una lista di parametri, gestendo i fallimenti delle singole iterazioni e offrendo scalabilità e monitoraggio granulare."
+    },
+    {
+        "id": "261",
+        "question": "A data engineer and a platform engineer are working together to automate their system tasks. A script needs to be executed outside of Databricks only if a particular daily Databricks job finishes successfully for the day. Databricks CLI command was used to check the last execution of the job. What are the required command options for that task?",
+        "options": [
+            "A. databricks jobs list-runs --job-id JOB_ID --start-time-to TODAY_MIDNIGHT --completed-only",
+            "B. databricks jobs list-runs-job-id JOB_ID --start-time-from TODAY_MIDNIGHT_EPOCH_MS --active-only",
+            "C. databricks jobs list-runs --job-id JOB_ID --start-time-to TODAY_MIDNIGHT --active-only",
+            "D. databricks jobs list-runs --job-id JOB_ID --start-time-from TODAY_MIDNIGHT_EPOCH_MS --completed-only"
+        ],
+        "answer": "D",
+        "explanation": "Per verificare se un job è terminato con successo oggi, è necessario filtrare i run per ID del job, impostare il tempo di inizio (start-time-from) alla mezzanotte del giorno corrente (in formato Epoch MS) e limitare i risultati ai soli run completati (completed-only)."
+    },
+    {
+        "id": "262",
+        "question": "A data engineering team needs to create a SQL Alert that monitors data quality across multiple columns in their customer table. They want to trigger an alert when both the percentage of customers with missing email addresses exceeds 15% AND the percentage of customers with invalid phone number formats exceeds 10%. Which SQL query pattern is appropriate for implementing this multi-column alert condition?",
+        "options": [
+            "A. SELECT COUNT(*) FROM customers WHERE email IS NULL OR phone_invalid_format = true",
+            "B. SELECT email, phone FROM customers WHERE email IS NULL AND phone NOT RLIKE '^[0-9-+()\\\\s]+$'",
+            "C. SELECT email_null_pct, phone_invalid_pct FROM (SELECT (COUNT(CASE WHEN email IS NULL THEN 1 END) * 100.0/COUNT (*)) as email_null_pct, (COUNT(CASE WHEN phone NOT RLIKE '^[0-9-+()\\\\s]+$' THEN 1 END) * 100.0/COUNT (*)) as phone_invalid_pct FROM customers)",
+            "D. SELECT CASE WHEN email_null_pct > 15 AND phone_invalid_pct > 10 THEN 1 ELSE 0 END FROM (SELECT (COUNT (CASE WHEN email IS NULL THEN 1 END) * 100.0 / COUNT (*)) as email_null_pct, (COUNT (CASE WHEN phone NOT RLIKE '^[0-9-+()\\\\s]+$' THEN 1 END) * 100.0 / COUNT (*)) as phone_invalid_pct FROM customers) metrics"
+        ],
+        "answer": "C",
+        "explanation": "La query corretta calcola le percentuali per ogni colonna all'interno di una subquery. Gli alert di Databricks SQL possono quindi essere configurati per attivarsi basandosi sui valori restituiti (email_null_pct > 15 e phone_invalid_pct > 10)."
+    },
+    {
+        "id": "263",
+        "question": "A data engineer is bringing an existing production Databricks job under asset bundle management and wants to ensure that: The job's current configuration is captured as YAML, and all referenced files are included in their bundle project. Future changes to the bundle's YAML will update the existing job in-place (not create a new job). How should the data engineer successfully move the production job under asset bundle management?",
+        "options": [
+            "A. Run databricks bundle generate job --existing-job-id to generate the YAML. Then, run databricks bundle deploy, which will always update the existing job automatically.",
+            "B. Export the job definition as JSON, convert it to YAML, and place it in your bundle. Then, run databricks bundle deploy.",
+            "C. Manually create the YAML configuration. Then, run databricks bundle deploy, which will update the existing job in your workspace.",
+            "D. Run databricks bundle generate job --existing-job-id to generate the YAML. Then, run databricks bundle deployment bind to link the bundle's job resource to the existing job in Databricks."
+        ],
+        "answer": "D",
+        "explanation": "Il comando 'bundle deployment bind' è fondamentale per collegare una risorsa definita nel bundle a una risorsa già esistente nel workspace, evitando la creazione di duplicati e permettendo aggiornamenti 'in-place'."
+    },
+    {
+        "id": "264",
+        "question": "A data architect is implementing Delta Sharing. Which specific permissions and roles must be assigned to enable users to create, configure, and manage Delta Shares while maintaining proper security governance?",
+        "options": [
+            "A. Only workspace admins can create and manage shares",
+            "B. Users need the MANAGE SHARES permission on the workspace",
+            "C. Users need to be metastore admins or have CREATE SHARE privilege for the metastore",
+            "D. Any user with USE_CATALOG privilege can create shares"
+        ],
+        "answer": "C",
+        "explanation": "La creazione di 'shares' in Delta Sharing è un privilegio a livello di metastore. Di conseguenza, solo i metastore admin o gli utenti a cui è stato concesso esplicitamente il privilegio CREATE SHARE sul metastore possono gestire le condivisioni."
+    },
+    {
+        "id": "265",
+        "question": "A data engineer manages a Lakeflow Spark Declarative Pipeline (LDP) and wants to monitor data quality expectations (passed/failed records) from the event logs stored in a Delta table named event_log_table. Which method retrieves the desired data quality metrics?",
+        "options": [
+            "A. Access the event_log_table, filter for events where event_type = 'flow_progress', and parse the details.flow_progress.data_quality.expectations field to extract the required metrics.",
+            "B. Use the UI to navigate to the specific pipeline and view the Data Quality tab to manually retrieve the metrics.",
+            "C. Query the event_log_table for events with event_type = 'data_quality' and directly select the passed_records and failed_records fields.",
+            "D. Access the event_log_table, filter for events where event_type = 'expectation_result', and extract the metrics from the details field."
+        ],
+        "answer": "A",
+        "explanation": "Le metriche di qualità delle pipeline LDP/DLT sono registrate nel log degli eventi. I dati specifici sulle 'expectations' si trovano all'interno della struttura JSON nel campo 'details', filtrando per il tipo di evento 'flow_progress'."
+    },
+    {
+        "id": "266",
+        "question": "Predictive Optimization is an automated Databricks service. Which two operations does Predictive Optimization run to maintain the Delta tables? (Choose two.)",
+        "options": [
+            "A. PARTITION BY",
+            "B. COMPACT",
+            "C. ANALYZE",
+            "D. OPTIMIZE",
+            "E. BUCKETING"
+        ],
+        "answer": "CD",
+        "explanation": "La Predictive Optimization gestisce automaticamente i comandi OPTIMIZE (per il compattamento dei file e l'organizzazione dei dati) e ANALYZE (per l'aggiornamento delle statistiche necessarie al query optimizer)."
+    },
+    {
+        "id": "267",
+        "question": "A data engineer is building a pipeline using AUTO CDC INTO syntax to maintain an SCD Type 1 table. How should the data engineer build a downstream job that streams from this table to only act on updates and delete events?",
+        "options": [
+            "A. Use ignoreChanges flag while streaming from the table to avoid breaking the pipeline.",
+            "B. Read change data feed from the table and apply filters to incrementally act on the change events.",
+            "C. Streaming from this table would only be possible in the case of SCD 2 retention.",
+            "D. Streaming can fail due to updates/deletes. Build another stream from the original source."
+        ],
+        "answer": "B",
+        "explanation": "Il Change Data Feed (CDF) è il meccanismo corretto per consumare incrementalmente le modifiche (inclusi aggiornamenti ed eliminazioni) da una tabella Delta, permettendo ai job a valle di distinguere il tipo di operazione effettuata."
+    },
+    {
+        "id": "268",
+        "question": "A data engineer is using Lakeflow Declarative Pipeline for real-time truck telemetry. 1) Near-real-time monitoring of latest stats per truck. 2) Daily aggregated reports. Which approach should be used?",
+        "options": [
+            "A. (Streaming Table per raw, Streaming Table per aggregati giornalieri, Materialized View per monitoring)",
+            "B. (Streaming Table per raw, Materialized View per monitoring, Materialized View per reporting)",
+            "C. Define a streaming table to ingest and store the raw telemetry data, and create a streaming table to incrementally compute the latest location, speed, and fuel level per truck_id for real-time monitoring. Create a materialized view to compute the daily aggregated distance and fuel efficiency per truck_id for reporting.",
+            "D. (Materialized View per ingestione, Streaming Table per monitoring, Materialized View per reporting)"
+        ],
+        "answer": "C",
+        "explanation": "Le Streaming Tables sono ideali per l'ingestione e il calcolo incrementale a bassa latenza (monitoring). Le Materialized Views sono più adatte per query analitiche e aggregati complessi (reporting giornaliero) che vengono aggiornati periodicamente."
+    },
+    {
+        "id": "269",
+        "question": "How should a platform lead generate an automated daily report to identify SQL warehouse usage at the individual user level and share it with executives?",
+        "options": [
+            "A. Share the system table queries with the executive team.",
+            "B. Use the system tables to capture the audit and billing usage data and create a dashboard with daily refresh schedules and shared with the executive team.",
+            "C. Restrict users from running queries unless they provide details.",
+            "D. Let the users report their own usage to the executives."
+        ],
+        "answer": "B",
+        "explanation": "La combinazione di tabelle di sistema (system.billing e system.access) e dashboard di Databricks SQL con refresh programmato è il modo standard per automatizzare il reporting dell'utilizzo e dei costi."
+    },
+    {
+        "id": "270",
+        "question": "A data engineering team wants to develop independently using Git without accidental overwrites. How should they achieve collaboration?",
+        "options": [
+            "A. Each team member creates their own Databricks Git folder, mapped to the same remote Git repository, and works in their own development branch within their personal folder.",
+            "B. All team members work in the same Databricks Git folder.",
+            "C. Team members edit notebooks in a shared folder and copy to Git.",
+            "D. Use the web terminal for all Git operations."
+        ],
+        "answer": "A",
+        "explanation": "L'isolamento degli ambienti di sviluppo in Databricks si ottiene assegnando a ogni utente la propria 'Git Folder'. Questo permette a ognuno di gestire i propri commit e branch senza interferire con il lavoro degli altri colleghi."
+    },
+    {
+        "id": "271",
+        "question": "How does the AUTO CDC API ensure deletions are applied correctly despite out-of-order events?",
+        "options": [
+            "A. It ignores deletions if they arrive after updates.",
+            "B. It manually sorts incoming events by timestamp.",
+            "C. It runs VACUUM on the target table.",
+            "D. It uses sequence_by to order events and retains tombstones for deleted rows until older sequences are processed."
+        ],
+        "answer": "D",
+        "explanation": "La clausola 'sequence_by' permette al sistema di ordinare correttamente i record basandosi su un timestamp o un numero di sequenza logico, mentre i 'tombstones' assicurano che le eliminazioni siano mantenute in memoria finché non sono stati processati tutti gli eventi precedenti."
+    },
+    {
+        "id": "272",
+        "question": "Which approach should the team use in Databricks to automatically generate column comments and descriptions for existing tables?",
+        "options": [
+            "A. Write custom PySpark code using df.describe().",
+            "B. Navigate to the table in Databricks Catalog Explorer, select the table schema view, and use the 'AI Generate' option.",
+            "C. Use the DESCRIBE TABLE command and write descriptions manually.",
+            "D. Use DESCRIBE HISTORY to infer column purposes."
+        ],
+        "answer": "B",
+        "explanation": "Databricks integra funzionalità di IA generativa direttamente nel Catalog Explorer. Queste possono analizzare i metadati e i campioni di dati per suggerire automaticamente descrizioni significative per tabelle e colonne."
+    },
+    {
+        "id": "273",
+        "question": "A company processes semi-structured JSON files from an external source using Auto Loader in a classic Databricks job. Occasionally, records arrive with null critical fields, invalid types, or unexpected nested schema variations. The engineer must ensure that malformed or non-conforming records are not dropped silently and are captured in a separate quarantine table. The pipeline should continue processing good records into the Bronze layer without failing the job, and the approach must support both batch and streaming ingestion. Which approach fulfills the quarantine mechanism in this ingestion architecture?",
+        "options": [
+            "A. Create a notebook job with inferSchema True, write a streaming query with .foreachBatch () and catch exceptions using try/except to redirect failed batches to quarantine.",
+            "B. Use Auto Loader with failFast mode to set to false, and enable schema evolution; invalid records will be silently ignored during ingestion.",
+            "C. Use Lakeflow Spark Declarative Pipelines with a SQL pipeline; configure it to drop rows with nulls using where critical.",
+            "D. Use Auto Loader with LDP and implement an EXPECT () constraint with a record audit logic to route bad records."
+        ],
+        "answer": "D",
+        "explanation": "L'uso di Delta Live Tables (qui citato come LDP/Lakeflow) insieme ad Auto Loader permette di definire delle 'expectations'. Usando la clausola EXPECT con logica di audit, è possibile instradare i record che falliscono la validazione in una tabella di quarantena senza interrompere il flusso dei dati corretti."
+    },
+    {
+        "id": "274",
+        "question": "A data engineer is analyzing transactional data in a PySpark DataFrame containing customer_id, transaction_timestamp, and amount_spent. The objective is to compute a cumulative sum of amount_spent per customer, strictly ordered by transaction_timestamp. The cumulative sum must include all transactions from the earliest timestamp up to and including the current row. Which PySpark code snippet most accurately constructs the appropriate window specification?",
+        "options": [
+            "A. window_spec = Window.partitionBy('customer_id').rowsBetween(Window.unboundedPreceding, Window.currentRow)",
+            "B. window_spec = Window.orderBy('transaction_timestamp').rowsBetween(Window.unboundedPreceding, Window.currentRow)",
+            "C. window_spec = Window.partitionBy('customer_id').orderBy('transaction_timestamp').rowsBetween(Window.unboundedPreceding, Window.currentRow); df.withColumn('cumulative_spent', sum('amount_spent').over(window_spec))",
+            "D. window_spec = Window.partitionBy('customer_id').orderBy('transaction_timestamp'); df.withColumn('cumulative_spent', sum('amount_spent').over(window_spec))"
+        ],
+        "answer": "C",
+        "explanation": "Per una somma cumulativa corretta per cliente, è necessario partizionare per 'customer_id' e ordinare per il timestamp. La clausola 'rowsBetween(Window.unboundedPreceding, Window.currentRow)' definisce esplicitamente il frame della finestra dall'inizio della partizione fino alla riga corrente."
+    },
+    {
+        "id": "275",
+        "question": "A data team is implementing an append-only Delta Lake pipeline that needs to handle both batch and streaming data. They want to ensure that schema changes in the source data can be automatically incorporated without breaking the pipeline. Which configuration should the team use when writing data to the Delta table?",
+        "options": [
+            "A. ignoreChanges = false",
+            "B. validateSchema = false",
+            "C. overwriteSchema = true",
+            "D. mergeSchema = true"
+        ],
+        "answer": "D",
+        "explanation": "L'opzione 'mergeSchema = true' permette a Delta Lake di evolvere lo schema della tabella target aggiungendo nuove colonne che appaiono nei dati sorgente, senza dover sovrascrivere l'intera tabella o interrompere la pipeline."
+    },
+    {
+        "id": "276",
+        "question": "A senior data engineer is planning large-scale data workflows. The senior data engineer is responsible for identifying the recommendations that are NOT valid regarding Delta Lake features. Which key features can be ignored while evaluating Delta Lake?",
+        "options": [
+            "A. Delta Lake works with various data formats (e.g., Parquet, JSON, CSV) and integrates well with Spark and Databricks tools.",
+            "B. Delta Lake optimizes metadata handling, efficiently managing billions of files and facilitating scalability.",
+            "C. Delta Lake's capability to process data in both batch and streaming modes seamlessly.",
+            "D. Delta Lake provides limited support for monitoring and troubleshooting data pipelines, so relevant partner tools have to be identified."
+        ],
+        "answer": "D",
+        "explanation": "L'affermazione D è falsa (quindi la risposta corretta da ignorare) perché Delta Lake offre un supporto eccellente e nativo per il monitoraggio e il troubleshooting attraverso il transaction log, la Spark UI e le metriche di sistema di Databricks."
+    },
+    {
+        "id": "277",
+        "question": "A data engineering team is implementing an append-only data pipeline using Delta Lake, and wants to ensure that data is never modified or deleted once written. Which Delta Lake feature should the data engineer enable to prevent modifications to existing data?",
+        "options": [
+            "A. Delta APPEND_ONLY",
+            "B. Delta VACUUM",
+            "C. Delta OPTIMIZE",
+            "D. Delta Time Travel"
+        ],
+        "answer": "A",
+        "explanation": "Impostando la proprietà della tabella 'delta.appendOnly = true', Delta Lake impedirà qualsiasi operazione di DELETE o UPDATE sulla tabella, garantendo che i dati esistenti non vengano mai modificati."
+    },
+    {
+        "id": "278",
+        "question": "A data engineering team is setting up a Git project to automate integration tests using Databricks Asset Bundles (DABs). What is the correct databricks bundle command sequence to be executed from the Git provider's CI/CD automation?",
+        "options": [
+            "A. init, deploy, run, validate",
+            "B. validate, deploy, run",
+            "C. init, validate, deploy, run",
+            "D. deploy, run, validate"
+        ],
+        "answer": "B",
+        "explanation": "La sequenza logica corretta in una pipeline CI/CD per i Bundle è: 1. validate (per verificare che il codice YAML sia corretto), 2. deploy (per distribuire le risorse nel workspace), 3. run (per eseguire il job di test)."
+    },
+    {
+        "id": "279",
+        "question": "A data engineer observes excessive data shuffling during a groupBy aggregation on 'region'. Which technique should be applied to reduce shuffling during the groupBy aggregation operation?",
+        "options": [
+            "A. Use .coalesce(1) after the aggregation",
+            "B. Caching the DataFrame df",
+            "C. Use broadcast join",
+            "D. Repartition by region before aggregation"
+        ],
+        "answer": "D",
+        "explanation": "Se i dati sono già ripartiti sulla colonna utilizzata per il raggruppamento ('region'), Spark può eseguire l'aggregazione localmente in ogni partizione riducendo drasticamente la quantità di dati scambiati in rete durante lo shuffle."
+    },
+    {
+        "id": "280",
+        "question": "In the Databricks Query Profile, a data engineer observes a sort operator with high 'Time spent' and 'Memory peak', and frequent data spilling. How should data engineering address this issue?",
+        "options": [
+            "A. Repartition the DataFrame to a single partition before sorting.",
+            "B. Convert the sort operation to a filter operation.",
+            "C. Switch to a broadcast join to reduce memory usage.",
+            "D. Increase the number of shuffle partitions to better distribute data."
+        ],
+        "answer": "D",
+        "explanation": "Il 'data spilling' avviene quando una partizione è troppo grande per stare in memoria e deve essere scritta su disco. Aumentando il numero di 'shuffle partitions', ogni partizione diventa più piccola e ha più probabilità di essere processata interamente in RAM."
+    },
+    {
+        "id": "281",
+        "question": "A data engineer manages a Unity Catalog table with sensitive fields ssn and credit_score. Intern Group should only see masked values, while Analyst Group should only access rows for their assigned region. How should the data engineer enforce this security policy?",
+        "options": [
+            "A. Use Unity Catalog's row filters based on the region and column masks based on user roles.",
+            "B. Create views using current_user() and is_account_group_member() functions.",
+            "C. Create dynamic views for each user role and manage access with ACLs.",
+            "D. Use Unity Catalog's row filters based on the user roles and column masks based on the region."
+        ],
+        "answer": "A",
+        "explanation": "La combinazione di Row Filters (per limitare le righe basandosi sulla regione) e Column Masks (per mascherare i dati sensibili basandosi sul ruolo dell'utente) è la modalità nativa e più sicura di Unity Catalog per gestire questi requisiti."
+    },
+    {
+        "id": "282",
+        "question": "A data engineer is ingesting JSON files using Auto Loader. To ensure predictable micro-batch sizes, the team wants to throttle ingestion based on the volume of data scanned at 1 GB, regardless of the number of files. Which configuration should be used?",
+        "options": [
+            "A. Configure cloudFiles.maxBytesPerTrigger with 1 GB to place a limit.",
+            "B. Configure cloudFiles.maxSizePerTrigger with 1 GB to place a limit.",
+            "C. Configure cloudFiles.maxFilesPerTrigger and estimate the average file size.",
+            "D. Configure cloudFiles.maxPartitionBytes with 1GB to limit data in each partition."
+        ],
+        "answer": "A",
+        "explanation": "La proprietà 'cloudFiles.maxBytesPerTrigger' permette di limitare la quantità di dati (in byte) processati in ogni micro-batch, garantendo stabilità indipendentemente dal numero di file piccoli o grandi che arrivano."
+    },
+    {
+        "id": "283",
+        "question": "A central data platform team wants to configure Lakehouse Federation so analysts can query external tables (PostgreSQL, Snowflake, SQL Server) directly in Databricks without duplicating data. Which steps are necessary?",
+        "options": [
+            "A. Mirror the external datasets into Delta Lake using Auto Loader.",
+            "B. Configure connections and foreign catalog in Unity Catalog, then grant access to foreign catalogs, schemas, and tables using Unity Catalog permissions.",
+            "C. Use Partner Connect to create linked datasets.",
+            "D. Create external locations and storage credentials to connect to each database."
+        ],
+        "answer": "B",
+        "explanation": "Lakehouse Federation si configura creando una 'Connection' verso il database esterno e un 'Foreign Catalog' che mappa il database remoto in Unity Catalog. Gli accessi vengono poi gestiti tramite i normali GRANT del catalogo."
+    },
+    {
+        "id": "284",
+        "question": "Why are Pandas UDFs often preferred over traditional PySpark UDFs in performance-critical applications involving large datasets?",
+        "options": [
+            "A. They minimize memory usage by streaming ciascuna riga individualmente.",
+            "B. They leverage Apache Arrow to enable vectorized operations between the JVM and Python runtimes, reducing serialization costs.",
+            "C. They allow row-level execution of functions in Python with native Spark optimization.",
+            "D. They eliminate the JVM-Python boundary by bypassing serialization entirely."
+        ],
+        "answer": "B",
+        "explanation": "Le Pandas UDF utilizzano Apache Arrow per trasferire i dati in modo vettorializzato (a blocchi di colonne) tra la JVM di Spark e l'interprete Python, riducendo drasticamente i tempi di serializzazione/deserializzazione rispetto alle UDF riga-per-riga."
+    },
+    {
+        "id": "285",
+        "question": "A pipeline needs to handle potential duplicates where events can arrive a week apart and outside of the configured watermark. The target is a Delta table where each record should appear exactly once. Which pattern should be implemented?",
+        "options": [
+            "A. Use Delta Lake's change data feed to filter duplicate records.",
+            "B. Use Delta Lake time travel to identify and remove duplicates.",
+            "C. Configure Structured Streaming with dropDuplicates transformation.",
+            "D. Implement a write operation using MERGE INTO with a unique key."
+        ],
+        "answer": "D",
+        "explanation": "Poiché i duplicati arrivano oltre la watermark dello streaming, dropDuplicates non sarebbe efficace (dovrebbe mantenere troppo stato in memoria). MERGE INTO basato su una chiave univoca garantisce la deduplicazione persistente a livello di tabella."
+    },
+    {
+        "id": "286",
+        "question": "A data engineer needs to design an efficient pipeline that automatically processes new CSV files as they arrive in S3 storage. Which Databricks feature should be used?",
+        "options": [
+            "A. Streaming from cloud storage using standard Spark readStream.",
+            "B. COPY INTO SQL command with parameters to track processed files.",
+            "C. Traditional batch processing with scheduled Databricks Jobs.",
+            "D. Auto Loader with schema inference and evolution enabled."
+        ],
+        "answer": "D",
+        "explanation": "Auto Loader (cloudFiles) è lo strumento ottimale per l'ingestione incrementale di file da cloud storage, offrendo gestione efficiente dei nuovi file, inferenza dello schema ed evoluzione automatica."
+    },
+    {
+        "id": "287",
+        "question": "How does liquid clustering in Delta Lake handle new data that is inserted after the initial table creation, if the table is external and not managed by Unity Catalog?",
+        "options": [
+            "A. New data is rejected if it doesn't match the clustering pattern.",
+            "B. New data is automatically clustered during write operations.",
+            "C. New data is written to a staging area and clustered during scheduled maintenance.",
+            "D. New data remains unclustered until the next OPTIMIZE operation."
+        ],
+        "answer": "D",
+        "explanation": "Per le tabelle esterne (non gestite da Unity Catalog), il 'cluster on write' non è sempre automatico o garantito come nelle tabelle gestite. Pertanto, i nuovi dati rimangono in uno stato non ottimizzato finché non viene eseguito manualmente il comando OPTIMIZE."
+    },
+    {
+        "id": "288",
+        "question": "A data engineer is optimizing a MERGE operation on an 800GB UC-managed table. Which two actions should the engineer prioritize to improve MERGE performance? (Choose two.)",
+        "options": [
+            "A. Apply liquid clustering using the merge join keys.",
+            "B. Enable deletion vectors on the table if not already enabled.",
+            "C. Partition the table by date.",
+            "D. Use ZORDER on high-cardinality columns.",
+            "E. Overwrite the table instead of Merge."
+        ],
+        "answer": "AB",
+        "explanation": "Il Liquid Clustering ottimizza il layout dei dati per le chiavi di join del MERGE, mentre i Deletion Vectors evitano di dover riscrivere interi file Parquet per ogni aggiornamento o eliminazione, velocizzando enormemente l'operazione."
+    },
+    {
+        "id": "289",
+        "question": "A data engineer is building a streaming data pipeline to ingest JSON files from cloud storage into a Delta Lake table. The pipeline must process files incrementally, handle schema evolution automatically, ensure exactly-once processing, and minimize manual infrastructure management. How should the data engineer fulfill these requirements?",
+        "options": [
+            "A. Use Lakeflow Spark Declarative Pipelines with a static DataFrame read, merge schema with spark.conf.set('spark.databricks.delta.schema.autoMerge.enabled', 'true')",
+            "B. Use Auto Loader in batch mode with a daily job to overwrite the Delta table.",
+            "C. Use Lakeflow Spark Declarative Pipelines with Auto Loader and enabling schema inference with 'cloudFiles.schemaEvolutionMode'= 'addNewColumns'",
+            "D. Use traditional Spark Structured Streaming with Auto Loader, manually configuring checkpoints location and enabling schema inference with 'mergeSchema'"
+        ],
+        "answer": "C",
+        "explanation": "L'uso di Lakeflow Spark Declarative Pipelines (precedentemente Delta Live Tables) insieme ad Auto Loader è la soluzione 'best practice' di Databricks. Questa combinazione gestisce automaticamente l'infrastruttura, garantisce il processamento exactly-once e permette l'evoluzione dello schema in modo dichiarativo."
+    },
+    {
+        "id": "290",
+        "question": "Given the following PySpark code snippet: filtered_df = spark.read.format('delta').load('/mnt/data/large_table').filter('event_date > \"2024-01-01\"'); filtered_df.count(). The data engineer notices from the Query Profile that the scan operator for filtered_df is reading almost all files, despite a filter being applied. What is the probable reason for poor data skipping?",
+        "options": [
+            "A. The Delta table lacks optimization that enables dynamic file pruning.",
+            "B. The filter condition involves a data type that is excluded from data skipping support.",
+            "C. The filter is executed only after the full data scan, which prevents data skipping from taking place.",
+            "D. The event_date column is outside the table's partitioning and Z-ordering scheme."
+        ],
+        "answer": "D",
+        "explanation": "Il Data Skipping in Delta Lake si basa sulle statistiche (min/max) memorizzate nel log delle transazioni. Se una colonna non è inclusa nel partizionamento o non è stata ottimizzata tramite Z-Ordering (o Liquid Clustering), Spark potrebbe dover leggere molti più file del necessario poiché i dati non sono raggruppati fisicamente in base a quella colonna."
+    },
+    {
+        "id": "291",
+        "question": "Project teams must store all assets as Managed assets in Unity Catalog. They can create and manage schemas, tables, volumes, and related objects but cannot rename, delete, or change catalog permissions, those remain under IT's control. Which rights should the project group be granted to enable this model?",
+        "options": [
+            "A. The group needs to have USE CATALOG and USE SCHEMA on the catalog.",
+            "B. The group needs to have ALL PRIVILEGES and the MANAGE on the catalog.",
+            "C. The group needs to have ALL PRIVILEGES on the catalog.",
+            "D. The group should be made OWNER of the catalog."
+        ],
+        "answer": "A",
+        "explanation": "In Unity Catalog, per permettere a un team di creare oggetti mantenendo il controllo amministrativo a livello di IT, è sufficiente concedere USE CATALOG e USE SCHEMA. Questo permette l'utilizzo e la creazione di oggetti all'interno, senza dare i permessi di amministrazione (OWNER o ALL PRIVILEGES) che permetterebbero di eliminare o modificare il catalogo stesso."
+    },
+    {
+        "id": "292",
+        "question": "A data engineer needs to productionize a new Spark application with numerous external dependencies, custom environment variables, and Spark configuration parameters. Which two methods will help the data engineer accomplish the task? (Choose two.)",
+        "options": [
+            "A. Install libraries on DBFS",
+            "B. Add libraries to compute policies",
+            "C. Use secrets in init scripts to store configuration data",
+            "D. Use compute policies to set system properties, environment variables, and Spark configuration parameters.",
+            "E. Create init scripts on DBFS."
+        ],
+        "answer": "DE",
+        "explanation": "Le policy di calcolo (Compute Policies) sono il modo standard per imporre variabili d'ambiente e parametri Spark in produzione. Gli Init Scripts (anche se ora preferibilmente gestiti tramite volumi UC) rimangono il metodo classico per configurare l'ambiente del nodo all'avvio."
+    },
+    {
+        "id": "293",
+        "question": "A healthcare analytics team is implementing a dimensional model in Delta Lake. They are evaluating design options for a date dimension table to ensure it supports a wide range of time-based analyses. Which design approach will support efficient time-based querying and aggregation?",
+        "options": [
+            "A. Store the date as string in ISO format (YYYY-MM-DD) for readability.",
+            "B. Pre-calculate attributes like fiscal_period, quarter, month_name, day_of_week, and holiday.",
+            "C. Store only the date value and calculate all time attributes in queries.",
+            "D. Create separate dimension tables for different calendar systems (fiscal, academic, etc.)"
+        ],
+        "answer": "B",
+        "explanation": "In un modello dimensionale (Star Schema), la best practice è pre-calcolare tutti gli attributi temporali nella tabella dimensionale. Questo evita calcoli complessi e ripetitivi durante le query di analisi, migliorando drasticamente le performance delle aggregazioni e dei filtri."
+    },
+    {
+        "id": "294",
+        "question": "A data engineer is tasked with ensuring that a Delta table in Databricks continuously retains deleted files for 15 days (instead of the default 7 days). Which code snippet correctly sets this retention period?",
+        "options": [
+            "A. spark.sql(\"ALTER TABLE my_table SET TBLPROPERTIES ('delta.deletedFileRetentionDuration' = 'interval 15 days')\")",
+            "B. deltaTable.deletedFileRetentionDuration = \"interval 15 days\"",
+            "C. spark.sql (\"VACUUM my_table RETAIN 360 HOURS\")",
+            "0. spark.conf.set(\"spark.databricks.delta.deletedFileRetemtionDuration\", \"15 days\")"
+        ],
+        "answer": "A",
+        "explanation": "La proprietà 'delta.deletedFileRetentionDuration' controlla per quanto tempo i file eliminati logicamente rimangono disponibili prima di essere rimossi fisicamente dal comando VACUUM. Va impostata come proprietà della tabella (TBLPROPERTIES)."
+    },
+    {
+        "id": "295",
+        "question": "A Data Engineer is building a fraud detection pipeline that calls out to OpenAI and needs to include an access token. Which Databricks CLI command should be used to create the secret?",
+        "options": [
+            "A. databricks secrets put-secret KEY SCOPE; dbutils.secrets.get (KEY, SCOPE)",
+            "B. databricks tokens put-token SCOPE KEY; dbutils.tokens.get (SCOPE, KEY)",
+            "C. databricks secrets put-secret SCOPE KEY; dbutils.secrets.get (SCOPE, KEY)",
+            "D. databricks tokens put-token KEY SCOPE; dbutils.secrets.get (KEY, SCOPE)"
+        ],
+        "answer": "C",
+        "explanation": "La sintassi corretta della Databricks CLI per inserire un segreto è 'put-secret' seguito dal nome dello SCOPE e poi dalla KEY. Per recuperarlo nel codice, si usa 'dbutils.secrets.get(SCOPE, KEY)'."
+    },
+    {
+        "id": "296",
+        "question": "A data engineer is asked to enrich the 'task_status' table (which enables deletion vectors, row tracking, and CDF) in near real-time by adding the owner's department from a static 'employee' table. How should this enrichment be implemented?",
+        "options": [
+            "A. Create a new LDP: use readStream() function with option readChangeFeed to read tasks_status table CDF; enrich with the employee table; create a new streaming table and use apply_changes() to process the changes.",
+            "B. Create a new LDP: use the readStream() function to read tasks_status table, enrich with the employee table; store the result in a new streaming table.",
+            "C. Create a new LDP: use the readStream() function with the option skipChangeCommits to read the tasks_status table; enrich with the employee table; store the result in a new streaming table.",
+            "D. Create a new LDP: use the read() function to read tasks_status table; enrich with employee table; store the result in a materialized view."
+        ],
+        "answer": "A",
+        "explanation": "Poiché la tabella sorgente utilizza aggiornamenti ed eliminazioni (gestiti con Deletion Vectors e CDF), per arricchirla in streaming in modo incrementale è necessario leggere il Change Data Feed (CDF) e utilizzare la funzione 'apply_changes' (o MERGE) per mantenere sincronizzata la tabella di arrivo."
+    },
+    {
+        "id": "297",
+        "question": "A data engineer is reviewing PySpark code to copy part of a production dataset to sandbox, ensuring no PII (user emails) is copied. Which anonymized code should be used to achieve the required outcome?",
+        "options": [
+            "A. df.withColumn ('user_email', F.expr('uuid()'))",
+            "B. df.withColumn ('user_email', F.sha2 ('user_email', 256))",
+            "C. df.withColumn ('hashed_email', sha2 ('user_email'))",
+            "D. df.withColumn ('user_email', F.regexp_replace ('user_email', '*', '@anonymized.com'))"
+        ],
+        "answer": "B",
+        "explanation": "L'hashing (tramite SHA-2) è una tecnica standard di anonimizzazione che permette di nascondere il valore reale (email) mantenendo però la possibilità di effettuare join o analisi consistenti sullo stesso utente (poiché lo stesso input produrrà sempre lo stesso hash)."
+    },
+    {
+        "id": "298",
+        "question": "A data engineer wants to ingest a large collection of image files (JPEG and PNG) from cloud object storage into Unity Catalog-managed table for further analysis and visualization. Which two configurations and practices are recommended to incrementally ingest these images into the table? (Choose two.)",
+        "options": [
+            "A. Use Auto loader and set cloudFiles.format to 'TEXT'",
+            "B. Use Auto loader and set cloudFiles.format to 'BINARYFILE'",
+            "C. Use Auto loader and set cloudFiles.format to 'IMAGE'",
+            "D. Use the pathGlobFilter option to select only image files (e.g.. '*.jpg, .png')",
+            "E. Move files to a volume and read with SQL editor"
+        ],
+        "answer": "BD",
+        "explanation": "L'uso di Auto Loader con formato BINARYFILE è la pratica raccomandata per l'ingestione di file binari (come le immagini). Il pathGlobFilter assicura che solo i file con estensione .jpg o .png vengano rilevati incrementalmente."
+    },
+    {
+        "id": "299",
+        "question": "A data engineer is configuring Delta Sharing for a Databricks-to-Databricks scenario to optimize read performance. The recipient needs to perform time travel queries and streaming reads on shared sales data. Which configuration will provide the optimal performance while enabling these capabilities?",
+        "options": [
+            "A. Use the open sharing protocol instead of Databricks-to-Databricks sharing for better performance.",
+            "B. Share tables WITHOUT HISTORY and enable partitioning for better query performance.",
+            "C. Share tables WITH HISTORY, ensure tables don't have partitioning enabled, and enable CDF before sharing.",
+            "D. Share the entire schema WITHOUT HISTORY and rely on recipient-side caching for performance."
+        ],
+        "answer": "C",
+        "explanation": "Per supportare time travel e streaming reads, è necessario condividere la history e abilitare il Change Data Feed (CDF). In scenari D2D, evitare il partizionamento spesso migliora le performance grazie all'ottimizzazione dei metadati condivisi."
+    },
+    {
+        "id": "300",
+        "question": "A data organization has adopted Delta Sharing to securely distribute curated datasets from a Unity Catalog-enabled workspace. The data engineering team is sharing large Delta tables with an internal partner via Databricks-to-Databricks and aggregated reports with an external client via Open Sharing. While testing new sharing workflows, the data engineering team encounters challenges related to access control, data update visibility, and shareable object types. What is a limitation of the Delta Sharing protocol or implementation when used with Databricks-to-Databricks or Open Sharing?",
+        "options": [
+            "A. Delta Sharing does not support Unity Catalog enabled tables; only legacy Hive Metastore tables are shareable.",
+            "B. With Databricks-to-Databricks sharing. Unity Catalog recipients must re-ingest data manually using COPY INTO or REST APIS.",
+            "C. Delta Sharing (both Databricks-to-Databricks and Open sharing) allows recipients to modify the source data if they have SELECT privileges.",
+            "D. With Open sharing, recipients cannot access Volumes, Models, or notebooks-only static Delta tables are supported."
+        ],
+        "answer": "D",
+        "explanation": "L'Open Sharing è limitato alla condivisione di tabelle Delta. Oggetti come volumi, modelli ML o notebook possono essere condivisi solo se entrambi i partner utilizzano Databricks (Databricks-to-Databricks)."
+    },
+    {
+        "id": "301",
+        "question": "A data engineer is creating a daily reporting Job. There are two reporting notebooks one for weekdays and the other for weekends. An 'If/else condition' task is configured as '{{job.start_time.is_weekday}} == true' to route the job to either weekday or weekend notebook tasks. The same job would be used in multiple time zones. Which action should a senior data engineer take upon reviewing the job to merge or reject the pull request?",
+        "options": [
+            "A. Reject. As they should use {{job.trigger_time.is_weekday}} instead.",
+            "B. Reject. As the {{job.start_time.is_weekday}} is not a valid value reference.",
+            "C. Reject. As the {{job.start_time.is_weekday}} is for the UTC timezone.",
+            "D. Merge. As the job configuration looks good."
+        ],
+        "answer": "C",
+        "explanation": "L'espressione job.start_time viene valutata in UTC. Se il job viene usato in diversi fusi orari, la data UTC potrebbe non corrispondere alla data locale, portando a errori nel routing tra giorni feriali e weekend."
+    },
+    {
+        "id": "302",
+        "question": "How are the operational aspects of Lakeflow Spark Declarative Pipelines from Spark Structured Streaming different?",
+        "options": [
+            "A. Lakeflow Spark Declarative Pipelines automatically handle schema evolution, while Structured Streaming always requires manual schema management.",
+            "B. Structured Streaming can process continuous data streams, while Lakeflow Spark Declarative Pipelines cannot.",
+            "C. Lakeflow Spark Declarative Pipelines manage the orchestration of multi-stage pipelines automatically, while Structured Streaming requires external orchestration for complex dependencies.",
+            "D. Lakeflow Spark Declarative Pipelines can write to Delta Lake format while structured streaming cannot."
+        ],
+        "answer": "C",
+        "explanation": "Le pipeline dichiarative (LDP/DLT) gestiscono l'orchestrazione e le dipendenze tra i vari stadi in modo automatico. Structured Streaming si occupa solo dell'esecuzione dello stream e richiede strumenti esterni (come i Workflow) per l'orchestrazione."
+    },
+    {
+        "id": "303",
+        "question": "A workspace admin has created a new catalog called 'finance_data' and wants to delegate permission management to a finance team lead without giving them full admin rights. Which privilege should be granted to the finance team lead?",
+        "options": [
+            "A. GRANT OPTION privilege on the finance_data catalog.",
+            "B. Make the finance team lead a metastore admin.",
+            "C. MANAGE privilege on the finance_data catalog.",
+            "D. ALL PRIVILEGES on the finance_data catalog."
+        ],
+        "answer": "C",
+        "explanation": "Il privilegio MANAGE è specifico per delegare la gestione dei permessi e degli oggetti all'interno di un catalogo senza dover promuovere l'utente ad amministratore del metastore."
+    },
+    {
+        "id": "304",
+        "question": "A data engineer is configuring a Lakeflow Spark Declarative Pipelines to process CDC data from a source. The source events sometimes arrive out of order, and multiple updates may occur with the same update_timestamp but with different update_sequence_id. What should the data engineer do to ensure events are sequenced correctly?",
+        "options": [
+            "A. Use SEQUENCE BY STRUCT(event_timestamp, update_sequence_id) in AUTO CDC APIs.",
+            "B. Set track history column list to [event timestamp, event id] in AUTO CDC APIs.",
+            "C. Use dropduplicate() to remove out-of-order and duplicate records in LDP.",
+            "D. Use a window function to sort update_sequence_id within the same partition."
+        ],
+        "answer": "A",
+        "explanation": "L'uso di una STRUCT nel SEQUENCE BY permette di definire un ordine gerarchico: se i timestamp sono uguali, viene usato l'ID di sequenza come tie-breaker per garantire l'ordine corretto."
+    },
+    {
+        "id": "305",
+        "question": "A streaming video analytics team ingests billions of events daily into a Unity Catalog-managed Delta table video_events. Analysts run ad-hoc point-lookup queries on columns like user_id, campaign_id, and region. The team manually runs OPTIMIZE video_events Z-ORDER user_id, campaign_id, region, but still sees poor performance on recent data, and dislikes the operational overhead. The team wants a hands-off way to keep hot columns co-located as query patterns evolve. Which Delta capability should the team leverage on video_events?",
+        "options": [
+            "A. Enable auto-compaction (optimizeWrite & autoCompact).",
+            "B. Schedule OPTIMIZE/ZORDER to run after each job to improve recent file performance.",
+            "C. Utilize Liquid Clustering CLUSTER BY AUTO and Predictive Optimization.",
+            "D. Enable Delta caching."
+        ],
+        "answer": "C",
+        "explanation": "Liquid Clustering con CLUSTER BY AUTO adatta il layout dei dati basandosi sui pattern di query reali, mentre la Predictive Optimization automatizza i processi di manutenzione in background senza intervento manuale."
+    },
+    {
+        "id": "306",
+        "question": "A data engineer is designing a data pipeline in Databricks that needs to process records from a Kafka stream where late-arriving data common. Which approach should the data engineer use?",
+        "options": [
+            "A. Use a watermark to specify the allowed lateness to accommodate records that arrive after their expected window, ensuring correct aggregation and state management.",
+            "B. Use an Auto CDC pipeline with batch tables to simplify late data handling.",
+            "C. Implement a custom solution using Databricks Jobs to periodically reprocess all historical data",
+            "D. Use batch processing and overwrite the entire output table each time to ensure late data is incorporated correctly."
+        ],
+        "answer": "A",
+        "explanation": "La watermark è il meccanismo standard in Structured Streaming per gestire i dati in ritardo, permettendo di definire una soglia temporale oltre la quale i dati non vengono più aggregati nello stato."
+    },
+    {
+        "id": "307",
+        "question": "A data engineering team is configuring access controls in Databricks Unity Catalog. They grant the SELECT privilege on the sales catalog to the analyst_group, expecting that members of this group will automatically have SELECT access to all current and future schemas, tables, and views within the sales catalog. What describes the privilege inheritance behavior in Unity Catalog?",
+        "options": [
+            "A. Privileges in Unity Catalog do not cascade; SELECT most be explicitly granted on each schema and table, even if granted at the catalog level.",
+            "B. Granting SELECT on a catalog automatically applies SELECT to all current and future schemas, tables, and views within that catalog.",
+            "C. Granting SELECT at the catalog level applies to existing schemas and tables but not to those created in the future.",
+            "D. Privileges granted at the schema level override any catalog-level privileges and prevent access unless explicitly revoked."
+        ],
+        "answer": "A",
+        "explanation": "In Unity Catalog, i permessi di accesso ai dati (come SELECT) non sono ereditari a cascata dal catalogo. Vanno concessi esplicitamente su ogni schema e ogni tabella/vista."
+    },
+    {
+        "id": "308",
+        "question": "How should the data engineer design a compliant data pipeline on Databricks that supports both batch and streaming modes, applies data masking to PII, and maintains traceability of transformations for audits?",
+        "options": [
+            "A. Ingest both batch and streaming data using Lakeflow Spark Declarative Pipelines, and apply masking via Unity Catalog column masks at read time to avoid modifying the data during ingestion.",
+            "B. Load batch data with notebooks and ingest streaming data with SQL Warehouses; use Unity Catalog column masks on Silver tables to redact fields after storage.",
+            "C. Use Lakeflow Spark Declarative Pipelines for batch and streaming ingestion define a PII masking function, and apply it during Bronze ingestion before writing to Delta Lake.",
+            "D. Allow Pll to be stored unmasked in Bronze for lineage tracking, then apply masking logic in Gold tables used for reporting."
+        ],
+        "answer": "C",
+        "explanation": "L'uso di pipeline dichiarative (LDP) garantisce coerenza tra batch e streaming. Mascherare i dati durante l'ingestione Bronze è la best practice per evitare di salvare dati sensibili in chiaro nel Lakehouse."
+    },
+    {
+        "id": "309",
+        "question": "Which method can be used to determine the total wall-clock time it took to execute a query?",
+        "options": [
+            "A. In the Spark Ul, take the job duration of the longest-running job associated with that query.",
+            "B. In the Spark Ul, take the sum of all task durations that ran across all stages (or all jobs associated with that query.",
+            "C. Open the Query Profiler associated with that query and use the Total wall-clock duration metric.",
+            "D. Open the Query Profiler associated with that query and use the Aggregated task time metric."
+        ],
+        "answer": "C",
+        "explanation": "Il Query Profiler mette a disposizione la metrica 'Total wall-clock duration' che indica il tempo reale trascorso dall'inizio alla fine dell'esecuzione della query."
+    },
+    {
+        "id": "310",
+        "question": "A data architect is designing a Databricks solution to efficiently process data for different business requirements. In which scenario should a data engineer use a materialized view compared to a streaming table?",
+        "options": [
+            "A. Precomputing complex aggregations and joins from multiple large tables to accelerate BI dashboard performance.",
+            "B. Processing high-volume, continuous clickstream data from a website to monitor user behavior in real-time.",
+            "C. Ingesting data from Apache Kafka topics with sub second processing requirements for immediate alerting,",
+            "D. Implementing a CDC (Change Data Capture) pipeline that needs to detect and respond to database changes within seconds."
+        ],
+        "answer": "A",
+        "explanation": "Le Materialized Views sono ideali per aggregazioni complesse che accelerano i dashboard BI. Per l'ingestione e il monitoraggio real-time a bassa latenza si usano invece le Streaming Tables."
+    },
+    {
+        "id": "311",
+        "question": "A query is taking too long to run. After investigating the Spark UI, the data engineer discovered a significant amount of disk spill. The type of compute instance the data engineer used only provides a core-to-memory ratio of 1:2. What are the two steps the data engineer should take to minimize spillage? (Choose two.)",
+        "options": [
+            "A. Increase spark.sql.files.maxPartitionBytes.",
+            "B. Choose a compute instance with more disk space.",
+            "C. Choose a compute instance with a higher core-to-memory ratio",
+            "D. Reduce spark.sql.files.maxPartitionBytes.",
+            "E. Choose a compute instance with more network bandwidth."
+        ],
+        "answer": "CD",
+        "explanation": "Aumentare la RAM per core aiuta a tenere i dati in memoria. Ridurre la dimensione massima delle partizioni assicura che ogni task gestisca meno dati, riducendo la probabilità di spill su disco."
+    },
+    {
+        "id": "312",
+        "question": "A data engineering team has a time-consuming data ingestion job. One day they received an alert message stating the job had failed. The failed notebook code was updated, and a new required configuration was introduced to parameterize a hardcoded value without notice. Which action should the team take in this scenario?",
+        "options": [
+            "A. Update the task by adding the missing task parameter, and manually run the job.",
+            "B. Share the analysis with the failing notebook owner so that they can fix it quickly.",
+            "C. Repair the run with the new parameter.",
+            "D. Repair the run with the new parameter, and update the task by adding the missing task parameter."
+        ],
+        "answer": "D",
+        "explanation": "La riparazione del run (Repair run) permette di recuperare i dati persi correggendo il parametro al volo, mentre l'aggiornamento del task risolve il problema in modo permanente per i run futuri."
+    },
+    {
+        "id": "313",
+        "question": "A data engineer is masking the provided data column containing the email address. The goal is to have an output of the same length for all rows, while keeping different outputs for different values. Which SQL function should be used to achieve this?",
+        "options": [
+            "A. hash(email)",
+            "B. mask (email, '?')",
+            "C. sha1(email)",
+            "D. sha2(email, 0)"
+        ],
+        "answer": "C",
+        "explanation": "Una funzione di hash crittografico come SHA-1 produce sempre una stringa di lunghezza fissa indipendentemente dall'input, garantendo al contempo output univoci per input diversi."
+    },
+    {
+        "id": "314",
+        "question": "A company wants to implement Lakehouse Federation across multiple data sources, but is worried about data consistency and ensuring all teams access the same authoritative version of their data. Which statement is applicable for Lakehouse Federations to maintain data consistency?",
+        "options": [
+            "A. Federation creates local copies that must be manually refreshed.",
+            "B. Federation implements change data capture from all sources.",
+            "C. A separate data synchronization service must be deployed.",
+            "D. Federation provides read-only access that reflects the current state of source systems."
+        ],
+        "answer": "D",
+        "explanation": "La Lakehouse Federation fornisce un accesso live e in sola lettura ai sistemi sorgente, garantendo che i risultati delle query siano sempre coerenti con lo stato attuale del sistema autoritativo."
+    },
+    {
+        "id": "315",
+        "question": "A data engineer needs to implement column masking for a sensitive column in a Unity Catalog-managed table. The masking logic must dynamically check if users belong to specific groups defined in a separate table (group_access) that maps groups to allowed departments. Which approach should the engineer use to efficiently enforce this requirement?",
+        "options": [
+            "A. Create a view without selecting the sensitive column",
+            "B. Apply a column mask that references the group_access mapping table in its UDF",
+            "C. Create a UDF that hardcodes allowed groups and apply it as a column mask.",
+            "D. Use a row filter to restrict access based on the user's group."
+        ],
+        "answer": "B",
+        "explanation": "La best practice in Unity Catalog è applicare una column mask basata su una UDF che interroga dinamicamente una tabella di mapping per determinare i privilegi di mascheramento."
+    },
+    {
+        "id": "316",
+        "question": "Two data engineers are working on the same Databricks notebook in separate branches. Both have edited the same section of code. When one tries to merge the other's branch into their own using the Databricks Git folders UI, a merge conflict occurs on that notebook file. How should the data engineers resolve this merge conflict using Databricks Git folders?",
+        "options": [
+            "A. Use the Git CLI in the cluster's web terminal to force-push the conflicted merge.",
+            "B. Use the Git folders UI to manually edit the notebook file, selecting the desired lines from both versions and removing the conflict markers, then mark the conflict as resolved.",
+            "C. Abort the merge, discard all local changes, and try the merge operation again.",
+            "D. Delete the conflicted notebook file via the Databricks workspace UI."
+        ],
+        "answer": "B",
+        "explanation": "La risoluzione dei conflitti nei Git Folders di Databricks richiede l'apertura manuale del notebook per scegliere le righe corrette e rimuovere i marcatori di conflitto prima di confermare la risoluzione."
+    },
+    {
+        "id": "317",
+        "question": "A data engineer wants to automate job monitoring and recovery in Databricks using the Jobs API. They need to list all jobs, identify a failed job, and rerun it. Which sequence of API actions should the data engineer perform?",
+        "options": [
+            "A. Use the jobs list endpoint to list jobs, check job run statuses with jobs runs list, and rerun a failed job using jobs run-now.",
+            "B. Use the jobs get endpoint to retrieve job details, then use jobs update to rerun failed jobs.",
+            "C. Use the jobs list endpoint to list jobs, then use the jobs create endpoint to create a new job.",
+            "D. Use the jobs cancel endpoint to remove failed jobs."
+        ],
+        "answer": "A",
+        "explanation": "Il flusso corretto prevede: list (per trovare il job), runs list (per identificare il fallimento specifico) e run-now (per riavviare l'esecuzione)."
+    },
+    {
+        "id": "318",
+        "question": "A data engineering team is setting up deployment automation. To deploy workspace assets remotely using the Databricks CLI command, they must configure it with proper authentication. Which authentication approach will provide the highest level of security?",
+        "options": [
+            "A. Use a service principal and its Personal Access Token",
+            "B. Use a service principal with OAuth token federation",
+            "C. Use a service principal ID and its OAuth client secret",
+            "D. Use a shared user account and its OAuth client secret"
+        ],
+        "answer": "B",
+        "explanation": "L'OAuth token federation è il metodo più sicuro poiché utilizza token a breve scadenza emessi dinamicamente, evitando l'uso di segreti statici o token a lunga durata (PAT)."
+    },
+    {
+        "id": "319",
+        "question": "A data engineer is studying possibilities to implement a data layout optimization technique for a table which is incremental, easy to maintain, and can easily evolve over time. Which command should the data engineer implement?",
+        "options": [
+            "A. Alter the table to use Hive Style Partitions + Z-ORDER and implement a periodic OPTIMIZE command.",
+            "B. Alter the table to use Hive Style Partitions and implement a periodic OPTIMIZE command.",
+            "C. Alter the table to use Z-ORDER arid implement a periodic OPTIMIZE command.",
+            "D. Alter the table to use Liquid Clustering and implement a periodic OPTIMIZE command"
+        ],
+        "answer": "D",
+        "explanation": "Il Liquid Clustering è la tecnologia più moderna di Delta Lake che sostituisce partizionamento e Z-Ordering, offrendo ottimizzazione incrementale e flessibilità nel tempo."
+    },
+    {
+        "id": "320",
+        "question": "A data engineer is designing an append-only pipeline that needs to handle both batch and streaming data in Delta Lake. The team wants to ensure that the streaming component can efficiently track which data has already been processed. Which configuration should be set to enable this?",
+        "options": [
+            "A. checkpointLocation",
+            "B. overwriteSchema",
+            "C. mergeSchema",
+            "D. partitionBy"
+        ],
+        "answer": "A",
+        "explanation": "La checkpointLocation è essenziale per lo Structured Streaming per memorizzare gli offset e garantire che il processamento riprenda correttamente da dove si era interrotto."
+    },
+    {
+        "id": "321",
+        "question": "How should the data engineer configure cluster isolation policies to enforce least privilege and ensure Unity Catalog compliance for interactive exploration and automated ETL jobs?",
+        "options": [
+            "A. Configure all dusters with NO_ISOLATION_SHARED access modes",
+            "B. Allow all users to create any duster type manually.",
+            "C. Create compute policies with STANDARD access mode for interactive workloads and dedicated access mode for automated jobs.",
+            "D. Use only DEDICATED access mode for both interactive workloads and automated jobs."
+        ],
+        "answer": "C",
+        "explanation": "La modalità STANDARD (Shared) è per l'esplorazione multi-utente. La modalità DEDICATED (Single User) è per i job automatizzati, garantendo isolamento e performance dedicata."
+    },
+    {
+        "id": "322",
+        "question": "Which approach will solve the problem of maintaining state across rows within each stock symbol group using a Pandas UDF with minimum overhead while preserving data integrity?",
+        "options": [
+            "A. Use a SCALAR ITER Pandas UDF with iterator-based processing.",
+            "B. Use a GROUPED AGG UPF with broadcast variables.",
+            "C. Use a SCALAR Pandas UDF with global variables.",
+            "D. Use ApplyInPandas method on spark dataframe that receives all rows for each stock symbol as a pandas DataFrame."
+        ],
+        "answer": "D",
+        "explanation": "Il metodo applyInPandas (Grouped Map) passa l'intero gruppo come DataFrame Pandas alla funzione, rendendo naturale e sicuro il mantenimento dello stato all'interno del gruppo."
+    },
+    {
+        "id": "323",
+        "question": "A data engineer after adding new table definitions and transformation logic in their notebook, they want to check for any syntax errors in the pipeline code without actually processing any data or running the pipeline. How should the data engineer perform this syntax check?",
+        "options": [
+            "A. Open the web terminal from the notebook and run a shell command.",
+            "B. Disconnect the notebook from the pipeline and reconnect it to a compute cluster.",
+            "C. Use the 'Validate' option in the notebook to check for syntax errors.",
+            "D. Switch to a workspace file instead of a notebook."
+        ],
+        "answer": "C",
+        "explanation": "L'opzione 'Validate' nelle pipeline DLT/LDP esegue un controllo statico del codice per trovare errori senza dover avviare effettivamente il cluster di calcolo."
+    },
+    {
+        "id": "324",
+        "question": "Upon investigation, they discovered that the query plans were different, and the queries that read from the Delta Lake tables leveraged a Shuffle Hash Join, whereas the legacy formats used Sort Merge Joins. Which reason could be attributed to the difference in query performance?",
+        "options": [
+            "A. The queries against the ORC tables leveraged the dynamic data skipping optimization but not the dynamic file pruning optimization.",
+            "B. The queries against the Delta Lake tables were able to leverage the dynamic file pruning optimization.",
+            "C. Delta Lake enables data skipping and file pruning using a vectorized Parquet reader.",
+            "D. Shuffle Hash Joins are always more efficient than Sort Merge Joins."
+        ],
+        "answer": "B",
+        "explanation": "Il Dynamic File Pruning di Delta Lake ottimizza le query evitando di leggere file irrilevanti basandosi sulle condizioni di join, migliorando drasticamente l'I/O rispetto ai formati legacy."
+    },
+    {
+        "id": "325",
+        "question": "A data engineering team wants to trigger a daily multitask ETL pipeline programmatically and see previous runs in the GUI. They need to ensure tasks are retried on failure and stakeholders are notified. Which two approaches will meet these requirements? (Choose two.)",
+        "options": [
+            "A. Trigger the job programmatically using the Databricks Jobs REST API (/jobs/run-now).",
+            "B. Use Databricks Asset Bundles (DABS) to trigger individual tasks directly.",
+            "C. Create a multi-task job using the UI, DABS, or the Jobs REST API (/jobs/create) and configure task-level retries and email notifications.",
+            "D. Use the REST API endpoint/jobs/runs/submit to trigger ciascuna task.",
+            "E. Create a single notebook that uses dbutils.notebook.run()."
+        ],
+        "answer": "AC",
+        "explanation": "La creazione di un Job multi-task (C) permette di configurare nativamente retry e notifiche. L'uso dell'API run-now (A) permette l'attivazione esterna mantenendo lo storico nella UI."
+    },
+    {
+        "id": "326",
+        "question": "How should the data engineer create the patient_encounters table to provide fast performance on patient_id and encounter_date while minimizing maintenance?",
+        "options": [
+            "A. Create an external table in Unity Catalog, specifying an S3 location.",
+            "B. Create a managed table in Unity Catalog and schedule daily OPTIMIZE/VACUUM jobs.",
+            "C. Create a managed table in Hive metastore.",
+            "D. Create a managed table in Unity Catalog. Configure Unity Catalog permissions for access controls, and rely on predictive optimization to enhance query performance and simplify maintenance."
+        ],
+        "answer": "D",
+        "explanation": "Le tabelle gestite in Unity Catalog offrono la migliore governance. Affidarsi alla Predictive Optimization elimina la necessità di programmare manualmente job di manutenzione per le performance."
+    },
+    {
+        "id": "327",
+        "question": "A data engineer has a delta table order with deletion vectors enabled for it. The engineer is attempting to execute: DELETE FROM orders WHERE status = 'cancelled'. What should be the behaviour of deletion vectors?",
+        "options": [
+            "A. Files are physically rewritten without the deleted row.",
+            "B. Rows are marked as deleted both in metadata and in files.",
+            "C. Rows are marked as deleted in metadata, not in files",
+            "D. Delta automatically removes all cancelled orders permanently."
+        ],
+        "answer": "C",
+        "explanation": "Con i Deletion Vectors, Delta Lake non riscrive i file fisici per ogni riga eliminata, ma segna le righe come eliminate nei metadati (vettori), velocizzando l'operazione di DELETE."
+    },
+    {
+        "id": "328",
+        "question": "A data engineer is building a Lakeflow Spark Declarative Pipelines pipeline. A metadata JSON file defines data quality rules. The pipeline must dynamically apply these rules without hardcoding them. How should the data engineer achieve this?",
+        "options": [
+            "A. Use a SQL CONSTRAINT block referencing the JSON file path.",
+            "B. Load the JSON metadata, loop through its entries, and apply expectations using dlt.expect_all.",
+            "C. Invoke an external API to validate records.",
+            "D. Reference each expectation with @dlt.expect decorators."
+        ],
+        "answer": "B",
+        "explanation": "Caricando il JSON e usando dlt.expect_all, è possibile mappare dinamicamente un set di regole esterne alla tabella LDP senza doverle scrivere manualmente nel codice."
+    },
+    {
+        "id": "329",
+        "question": "BILLIONS of raw connection logs must be enriched with geolocation data based on IPv4 ranges. Which change will most dramatically accelerate the query while preserving its logic?",
+        "options": [
+            "A. Increase spark.sql.shuffle.partitions from 200 to 10000.",
+            "B. Force a sort-merge join with /*+ MERGE (1) */ on ip_ranges.",
+            "C. Add a broadcast hint: /*+ BROADCAST (1) */ for ip_ranges.",
+            "D. Add a range-join hint /16 bin size (65 536): /*+ RANGE_JOIN (1, 65536) */."
+        ],
+        "answer": "D",
+        "explanation": "Il range-join hint è l'ottimizzazione specifica per join basati su intervalli (BETWEEN), essenziale per performance scalabili quando si lavora con miliardi di record."
+    },
+    {
+        "id": "330",
+        "question": "A data engineer is using Lakeflow Declarative Pipeline to propagate row deletions from user_bronze to user_silver. Which configuration ensures deletions in the bronze table are propagated to the silver table?",
+        "options": [
+            "A. Use apply_changes without CDF and filter rows where _soft_deleted is true.",
+            "B. Enable CDF on user_silver, read its transaction log, and use MERGE.",
+            "C. Enable CDF on user_bronze, read its CDF stream, and use apply_changes with apply_as_deletes for user_silver.",
+            "D. Configure VACUUM on user_bronze to delete files, then rebuild user_silver."
+        ],
+        "answer": "C",
+        "explanation": "Per propagare le eliminazioni, è necessario abilitare il Change Data Feed (CDF) sulla sorgente e usare la clausola apply_as_deletes nella funzione apply_changes."
+    },
+    {
+        "id": "331",
+        "question": "The pipeline must enforce data quality by ensuring customer_id and amount are greater than zero. Invalid records should be dropped. Which Lakeflow Spark Declarative Pipelines configurations implement this requirement using Python?",
+        "options": [
+            "A. @dlt.table @dlt.expect_or_drop (\"valid_customer\", \"customer_id IS NOT NULL\") @dlt.expect_or_drop (\"valid_amount\", \"amount > 0\") def silver_orders (): return dlt.read_stream(\"bronze_orders\")",
+            "B. @dlt.table def silver_orders (): return dlt.read_stream(\"bronze_orders\").expect_or_drop (...)",
+            "C. @dlt.table @dlt.expect(\"valid_customer\", \"customer_id IS NOT NULL\") (...)",
+            "D. @dlt.table def silver_orders (): return dlt.read_stream(\"bronze_orders\").expect (...)"
+        ],
+        "answer": "A",
+        "explanation": "In Python, il decoratore @dlt.expect_or_drop viene utilizzato sopra la funzione della tabella per definire i vincoli di qualità che comportano lo scarto dei record non conformi."
+    },
+    {
+        "id": "332",
+        "question": "The team wants to trigger an alert when the daily average of percent_null exceeds 5% for three consecutive days, while ensuring notifications aren't spammed. Which SQL alert configuration achieves this goal?",
+        "options": [
+            "A. (Query AVG con Notification Frequency: Each time)",
+            "B. (Query semplice con Alert Condition: percent_null > 5)",
+            "C. (Query con violation_days >= 3 e Notification Frequency: Just once)",
+            "D. WITH daily_avg AS (...) SELECT day, avg_null FROM daily_avg ORDER BY day DESC LIMIT 3 Alert Condition: ALL avg_null > 5 for the latest 3 rows Notification Frequency: Just once"
+        ],
+        "answer": "D",
+        "explanation": "Calcolare la media giornaliera e controllare che gli ultimi 3 record (giorni) siano tutti sopra la soglia è il modo corretto di gestire la consecutività. 'Just once' evita lo spam di notifiche."
+    },
+    {
+        "id": "333",
+        "question": "A data engineer is configuring a Databricks Asset Bundle to deploy a job with granular permissions: Grant data-engineers CAN MANAGE, and auditors CAN VIEW. How should the data engineer deploy the job?",
+        "options": [
+            "A. (YAML con permissions separate dalle risorse)",
+            "B. (YAML con admin-team IS_OWNER aggiuntivo)",
+            "C. (YAML con risorse jobs e blocco permissions definito all'interno del job 'my-job')",
+            "D. (YAML con blocchi permissions duplicati)"
+        ],
+        "answer": "C",
+        "explanation": "La configurazione corretta del bundle prevede che le 'permissions' siano definite come proprietà della risorsa specifica (job) per garantire che i permessi siano circoscritti correttamente."
+    },
+    {
+        "id": "334",
+        "question": "The workspace is air-gapped. The engineer wants to install the PyYAML package from the local wheel file so it is automatically available whenever any new cluster is provisioned. Which approach should the data engineer use?",
+        "options": [
+            "A. Upload the PyYAML.whl file to a Unity Catalog Volume. They then ensure the path to this wheel file is added to the Unity Catalog allowlist. Finally, they create a cluster-scoped init script that executes pip install /path/to/PyYAML.whl",
+            "B. Add the PyYAML.whl file directly to their Databricks Git Repos.",
+            "C. Upload and register the PyYAML.whl file under the user home directory and use an init script.",
+            "D. Set up a private PyPI repository and use an init script."
+        ],
+        "answer": "A",
+        "explanation": "L'uso dei Volumi UC per lo storage e di un init script per l'installazione è la modalità sicura e conforme a Unity Catalog per gestire librerie in ambienti isolati (air-gapped)."
+    },
+    {
+        "id": "335",
+        "question": "Which command will trigger the job execution specifically within the prod target context of a Databricks Asset Bundle?",
+        "options": [
+            "A. databricks job run my_project_job --env prod",
+            "B. databricks execute my project_job -e prod",
+            "C. databricks run my_project_job -t prod",
+            "D. databricks bundle run my_project_job -t prod"
+        ],
+        "answer": "D",
+        "explanation": "Il comando CLI 'databricks bundle run' con il flag '-t' (target) è quello corretto per avviare un job definito e distribuito tramite un Asset Bundle rispettando le configurazioni d'ambiente."
+    },
+    {
+        "id": "336",
+        "question": "For each sensor, the team needs one row per non-overlapping 5-minute interval, offset by 2 minutes, showing the average temperature in that slice. Which query satisfies the requirement?",
+        "options": [
+            "A. (Query con AVG OVER RANGE BETWEEN)",
+            "B. SELECT device_id, window.start AS bucket_start, window.end AS bucket_end, AVG(temperature_c) AS avg_temp_5m FROM device_readings GROUP BY device_id, window(event_ts, '5 minutes', '5 minutes', '2 minutes') ORDER BY device_id, bucket_start;",
+            "C. (Query con CTE buckets e window offset invertito)",
+            "D. (Query con date_trunc manuale)"
+        ],
+        "answer": "B",
+        "explanation": "La funzione window() accetta la durata (5m), lo scorrimento (5m per finestre non sovrapposte) e l'offset (2m). È la sintassi nativa di Spark per creare questi raggruppamenti temporali."
+    },
+    {
+        "id": "337",
+        "question": "Sensors send bad readings flagged with a warning. New requirement: the bad rows need to be quarantined in a separate quarantine table and no longer included in the silver table. Which code will satisfy the requirements?",
+        "options": [
+            "A. (Due tabelle con expect normale)",
+            "B. (Silver con expect_or_drop e Quarantine con filtro errato)",
+            "C. @dlt.table @dlt.expect_or_drop(\"valid_sensor_reading\", \"reading < 120\") def silver_sensor_readings(): ... @dlt.table @dlt.expect(\"invalid_sensor_reading\", \"reading >= 120\") def quarantine_sensor_readings(): ...",
+            "D. (Entrambe le tabelle con expect_or_drop)"
+        ],
+        "answer": "C",
+        "explanation": "Usando expect_or_drop sulla tabella silver, i record errati vengono rimossi dal dataset principale. La tabella di quarantena cattura gli stessi record errati (>= 120) per permetterne l'analisi."
+    },
+    {
+        "id": "338",
+        "question": "Analysts need both the clean records and the quarantined records available for separate processing (bicycles sensors failing lat/long). How should the data engineer meet the requirements to capture good and bad data?",
+        "options": [
+            "A. (Tabella di quarantena con filtro manuale sulla view)",
+            "B. (Tabella unica con expect_all_or_drop)",
+            "C. @dlt.table(partition_cols=[\"is_quarantined\"]) @dlt.expect_all(rules) def trips_data_quarantine(): return (spark.readStream.table(\"raw_trips_data\").withColumn(\"is_quarantined\", expr(quarantine_rules)))",
+            "D. (View con expect_or_drop)"
+        ],
+        "answer": "C",
+        "explanation": "Aggiungere una colonna booleana che identifica se il record è in quarantena e partizionare la tabella su quella colonna permette di tenere tutto nello stesso posto ma processarlo separatamente in modo efficiente."
+    },
+    {
+        "id": "339",
+        "question": "To identify the top users consuming compute resources, a data engineering team needs to monitor usage within their Databricks workspace for better resource utilization and cost control. The team decided to use Databricks system tables, available under the System catalog in Unity Catalog, to gain detailed visibility into workspace activity. Which SQL query should the team run from the System catalog to achieve this?",
+        "options": [
+            "A. %sql SELECT sku_name, usage_metadata.run_name AS user_email, sum(usage_quantity) AS total_dbus FROM system.billing.usage GROUP BY user_email, sku_name ORDER BY total_dbus DESC LIMIT 10",
+            "B. %sql SELECT sku_name, identity_metadata.created_by AS user_email, count(usage_quantity) AS total_dbus FROM system.billing.usage GROUP BY user_email, sku_name ORDER BY total_dbus DESC LIMIT 10",
+            "C. %sql SELECT sku_name, identity_metadata.created_by AS user_email, sum(usage_quantity* usage_unit) AS total_dbus FROM system.billing.usage GROUP BY user_email, sku_name ORDER BY total_dbus DESC LIMIT 10",
+            "D. %sql SELECT identity_metadata.run_as AS user_email, SUM(usage_quantity) AS total_dbus FROM system.billing.usage GROUP BY user_email ORDER BY total_dbus DESC LIMIT 10"
+        ],
+        "answer": "D",
+        "explanation": "La tabella system.billing.usage è la fonte dei dati di consumo. Il campo identity_metadata.run_as è quello che traccia chi ha effettivamente eseguito il carico di lavoro, e sum(usage_quantity) calcola il totale dei DBU."
+    }
+]
