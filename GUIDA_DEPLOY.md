@@ -45,9 +45,13 @@ Fatto: i tuoi file sono online.
      profilo text primary key,
      current_idx int default 0,
      correct int default 0,
-     wrong int default 0
+     wrong int default 0,
+     wrong_ids jsonb default '[]'::jsonb
    );
    ```
+
+   > Se avevi già creato la tabella prima di questa colonna, aggiungila con:
+   > `alter table progresso add column wrong_ids jsonb default '[]'::jsonb;`
 
 4. Prendi le due chiavi che servono all'app. Menù a sinistra: **Project Settings** (icona ingranaggio) → **API**. Copia e tieni da parte:
    - **Project URL** (una cosa tipo `https://xxxxx.supabase.co`)

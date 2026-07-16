@@ -53,8 +53,11 @@ def load_data():
 
 
 # --- GESTIONE STATO (cloud o locale) ---
+def default_state():
+    return {"current_idx": 0, "correct": 0, "wrong": 0, "wrong_ids": []}
+
+
 def load_state():
-    default_state = {"current_idx": 0, "correct": 0, "wrong": 0}
     if USING_CLOUD:
         try:
             res = supabase.table("progresso").select("*").eq("profilo", PROFILE_ID).execute()
@@ -64,21 +67,26 @@ def load_state():
                     "current_idx": row.get("current_idx", 0),
                     "correct": row.get("correct", 0),
                     "wrong": row.get("wrong", 0),
+                    "wrong_ids": row.get("wrong_ids") or [],
                 }
             # Nessuna riga ancora: la creiamo
-            supabase.table("progresso").insert({"profilo": PROFILE_ID, **default_state}).execute()
-            return default_state
+            new_state = default_state()
+            supabase.table("progresso").insert({"profilo": PROFILE_ID, **new_state}).execute()
+            return new_state
         except Exception as e:
             st.warning(f"Impossibile leggere i progressi dal cloud: {e}. Uso il salvataggio locale.")
     # Fallback locale
     if os.path.exists(STATE_FILE):
         with open(STATE_FILE, 'r') as f:
-            return json.load(f)
-    return default_state
+            saved = json.load(f)
+            merged = default_state()
+            merged.update(saved)
+            return merged
+    return default_state()
 
 
-def save_state(idx, correct, wrong):
-    payload = {"current_idx": idx, "correct": correct, "wrong": wrong}
+def save_state(idx, correct, wrong, wrong_ids):
+    payload = {"current_idx": idx, "correct": correct, "wrong": wrong, "wrong_ids": wrong_ids}
     if USING_CLOUD:
         try:
             supabase.table("progresso").update(payload).eq("profilo", PROFILE_ID).execute()
@@ -94,7 +102,7 @@ def reset_state():
     if USING_CLOUD:
         try:
             supabase.table("progresso").update(
-                {"current_idx": 0, "correct": 0, "wrong": 0}
+                {"current_idx": 0, "correct": 0, "wrong": 0, "wrong_ids": []}
             ).eq("profilo", PROFILE_ID).execute()
             return
         except Exception as e:
@@ -115,7 +123,10 @@ if 'idx' not in st.session_state:
     st.session_state.idx = state["current_idx"]
     st.session_state.correct = state["correct"]
     st.session_state.wrong = state["wrong"]
+    st.session_state.wrong_ids = state["wrong_ids"]
     st.session_state.answered = False
+    st.session_state.mode = "normal"
+    st.session_state.review_idx = 0
 
 # Sidebar
 with st.sidebar:
@@ -126,22 +137,57 @@ with st.sidebar:
         st.caption("💾 Salvataggio locale")
     st.metric("Corrette ✅", st.session_state.correct)
     st.metric("Sbagliate ❌", st.session_state.wrong)
+
+    n_wrong = len(st.session_state.wrong_ids)
+    st.markdown("---")
+    if st.session_state.mode == "review":
+        if st.button("🔁 Torna al quiz principale"):
+            st.session_state.mode = "normal"
+            st.session_state.answered = False
+            st.rerun()
+    else:
+        if st.button(f"📝 Rivedi errori ({n_wrong})", disabled=n_wrong == 0):
+            st.session_state.mode = "review"
+            st.session_state.review_idx = 0
+            st.session_state.answered = False
+            st.rerun()
+
+    st.markdown("---")
     if st.button("Reset Totale"):
         reset_state()
         st.session_state.idx = 0
         st.session_state.correct = 0
         st.session_state.wrong = 0
+        st.session_state.wrong_ids = []
         st.session_state.answered = False
+        st.session_state.mode = "normal"
+        st.session_state.review_idx = 0
         st.rerun()
 
 # Layout Principale
 st.title("🎓 Databricks Professional Simulator")
-st.progress((st.session_state.idx + 1) / len(data))
 
-q = data[st.session_state.idx]
+if st.session_state.mode == "review":
+    queue = [item for item in data if item['id'] in st.session_state.wrong_ids]
+    if not queue:
+        st.success("Hai rivisto e risolto tutti gli errori! 🎉")
+        st.session_state.mode = "normal"
+        st.rerun()
+    st.session_state.review_idx = st.session_state.review_idx % len(queue)
+    q = queue[st.session_state.review_idx]
+    st.caption("📝 Modalità ripasso errori")
+    st.progress((st.session_state.review_idx + 1) / len(queue))
+    widget_key = f"review_{q['id']}"
+else:
+    st.progress((st.session_state.idx + 1) / len(data))
+    q = data[st.session_state.idx]
+    widget_key = f"in_{st.session_state.idx}"
 
 st.markdown(f"<div class='question-card'>", unsafe_allow_html=True)
-st.write(f"**Domanda {st.session_state.idx + 1} di {len(data)}** (ID: #{q['id']})")
+if st.session_state.mode == "review":
+    st.write(f"**Ripasso {st.session_state.review_idx + 1} di {len(queue)}** (ID: #{q['id']})")
+else:
+    st.write(f"**Domanda {st.session_state.idx + 1} di {len(data)}** (ID: #{q['id']})")
 st.markdown(f"### {q['question']}")
 
 # Mostra le opzioni se presenti nel JSON
@@ -149,25 +195,32 @@ if "options" in q:
     for opt in q["options"]:
         st.write(opt)
 
-user_input = st.text_input("La tua risposta (es: A, B, C, D):", key=f"in_{st.session_state.idx}").upper().strip()
+user_input = st.text_input("La tua risposta (es: A, B, C, D):", key=widget_key).upper().strip()
 
 if st.button("Conferma"):
     st.session_state.answered = True
     if user_input == q['answer'].upper():
         st.success("✅ Esatto!")
         st.session_state.correct += 1
+        if q['id'] in st.session_state.wrong_ids:
+            st.session_state.wrong_ids.remove(q['id'])
     else:
         st.error(f"❌ Errato. La risposta corretta è: {q['answer']}")
         st.session_state.wrong += 1
-    save_state(st.session_state.idx, st.session_state.correct, st.session_state.wrong)
+        if q['id'] not in st.session_state.wrong_ids:
+            st.session_state.wrong_ids.append(q['id'])
+    save_state(st.session_state.idx, st.session_state.correct, st.session_state.wrong, st.session_state.wrong_ids)
 
 if st.session_state.answered:
     st.markdown("---")
     st.markdown("##### 💡 Spiegazione")
     st.info(q['explanation'])
     if st.button("Prossima domanda ➡️"):
-        st.session_state.idx += 1
+        if st.session_state.mode == "review":
+            st.session_state.review_idx += 1
+        else:
+            st.session_state.idx += 1
         st.session_state.answered = False
-        save_state(st.session_state.idx, st.session_state.correct, st.session_state.wrong)
+        save_state(st.session_state.idx, st.session_state.correct, st.session_state.wrong, st.session_state.wrong_ids)
         st.rerun()
 st.markdown("</div>", unsafe_allow_html=True)
